@@ -106,6 +106,43 @@ The viewer also accepts a `dist` directory, or a path to its `dom.bin`, and load
 
 In both cases no HTML, CSS, or JavaScript text is parsed. The console reports the mode, the manifest, and what was verified.
 
+### The shell
+
+The frame around the page is the shell: a VPP page owned by the viewer and drawn by the same engine, above the page in the same window.
+
+```text
+< > R  [ address field                         ]  _ [ ] X
+```
+
+- Back, forward, and reload; the address field; minimize, maximize, and close.
+- Click the address field or press Ctrl+L to edit it. Type a `.vpp` URL, a local `.vpp` file, a page `.html`, or a `dist` directory, and press Enter. Esc restores the current address. Ctrl+A selects all, Ctrl+V pastes.
+- Drag the bar to move the window; the window edges resize it.
+- With no argument the viewer opens its start page, which explains the address field.
+
+A site shapes the shell from the `window` object in its `vpp.json`:
+
+```json
+"window": {
+  "theme": "#2563eb",
+  "addressBar": "hidden",
+  "titleBar": false,
+  "cornerRadius": 12,
+  "width": 800,
+  "height": "auto",
+  "resizable": false
+}
+```
+
+- `theme` colours the bar; button and text colours adapt to it.
+- `addressBar: "hidden"` removes the address field but keeps the buttons.
+- `titleBar: false` hides the whole bar. The top strip of the page then drags the window, and scripts can call `VPP.window.minimize()`, `maximize()`, and `close()` to draw their own buttons.
+- `cornerRadius` rounds the window's corners; the corners are transparent, so the desktop shows through. Not applied while maximized.
+- `width` and `height` set the initial window size in CSS pixels. `"height": "auto"` makes the window wrap the page and follow it when the content or the page changes. An automatic height turns resizing off unless `resizable` says otherwise.
+
+Pages can draw their own icons with inline `<svg>` elements: the engine fills every `<path>` in them, so an icon file such as one from Bootstrap Icons can be pasted in with `<vpp-include src="/assets/icons/x-lg.svg" />` and coloured through CSS `color`. See `examples/app-window`.
+
+Two rules hold whatever a site asks for. Ctrl+L reveals the full shell with the real address until Esc. Following a link from one site into another shows the full shell until Esc as well, so the user always sees where they landed. A site opened directly, from the command line or the address field, starts the way it asked. A page can hide the frame for itself, never for the site it links to. See `examples/app-window` for a site that draws its own close button.
+
 ### Remote mode
 
 ```text

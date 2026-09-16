@@ -31,6 +31,8 @@
 #include "vpp/template.h"
 #include "vpp/updater.h"
 
+#include "shell.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
@@ -53,7 +55,7 @@ constexpr int kLogicalWidth = 800;
 constexpr int kLogicalHeight = 520;
 constexpr float kDragStripHeight = 40.0f; // CSS px, top band that moves the frameless window
 constexpr float kUiTextSize = 18.0f;
-const char* kDefaultPage = "examples/hello-world/pages/home.html";
+constexpr float kResizeBorder = 6.0f; // CSS px, frameless-window resize grip
 
 const vpp::Color kBackground = vpp::Color::rgb(244, 244, 245);
 const vpp::Color kTextDark = vpp::Color::rgb(24, 24, 27);
@@ -81,11 +83,16 @@ struct App {
     vpp::FontSet fonts;
     float scale = 1.0f; // device px per CSS px
 
-    std::string location; // current page: HTML path, dist directory, .vpp path, or URL
+    std::string location; // current page: HTML path, dist directory, .vpp path, URL, or empty for the start page
     std::vector<std::string> history;
     size_t historyIndex = 0;
     bool allowUnsigned = false;
     std::string title = "VPP Viewer";
+
+    Shell shell;
+    WindowPrefs pagePrefs;    // what the current page asked for
+    std::string siteId;       // of the current page, to notice site changes
+    std::string shownSiteId;  // the site the shell was last built for
 
     std::unique_ptr<vpp::Node> document;
     vpp::StyleSheet sheet;
@@ -172,11 +179,28 @@ void createScriptHost(App& app) {
         app.dirty = true;
     };
     cb.close = [&app] { app.running = false; };
+    cb.minimize = [&app] { SDL_MinimizeWindow(app.window); };
+    cb.maximize = [&app] {
+        if (SDL_GetWindowFlags(app.window) & SDL_WINDOW_MAXIMIZED) SDL_RestoreWindow(app.window);
+        else SDL_MaximizeWindow(app.window);
+    };
     cb.invalidate = [&app] {
         app.needsLayout = true;
         app.dirty = true;
     };
     app.script = std::make_unique<vpp::ScriptHost>(*app.document, std::move(cb));
+}
+
+void loadStart(App& app) {
+    std::printf("mode: start\n");
+    app.document = vpp::parseHtml(
+        "<html><body><h1>VPP Viewer</h1>"
+        "<p>Enter the address of a page in the bar above: a .vpp URL such as "
+        "https://example.com/site/home.vpp, or a local .vpp file or page.html.</p>"
+        "<p>Press Ctrl+L to focus the address bar at any time. Alt+Left and Alt+Right move through history.</p>"
+        "</body></html>");
+    app.title = "VPP Viewer";
+    createScriptHost(app);
 }
 
 void showError(App& app, const std::string& title, const std::string& detail) {
@@ -193,7 +217,15 @@ void loadDevelopment(App& app, const fs::path& page) {
     vpp::TemplateOptions options;
     options.projectRoot = vpp::findProjectRoot(page);
     std::string json;
-    if (readFile(options.projectRoot / "vpp.json", json)) options.componentAliases = vpp::parseComponentAliases(json);
+    app.siteId = "dev:" + options.projectRoot.u8string();
+    if (readFile(options.projectRoot / "vpp.json", json)) {
+        options.componentAliases = vpp::parseComponentAliases(json);
+        vpp::AppManifest manifest;
+        if (vpp::parseAppManifest(json, manifest, nullptr)) {
+            app.pagePrefs = parseWindowPrefs(manifest.window);
+            app.siteId = manifest.id;
+        }
+    }
 
     vpp::ExpandedPage expanded;
     std::string error;
@@ -327,6 +359,8 @@ void loadPackage(App& app, const fs::path& file) {
     const vpp::AppManifest& m = pkg.manifest();
     std::printf("package: %s / %s %s (%s), %zu resources\n", m.name.c_str(), m.page.c_str(), m.version.c_str(),
                 m.id.c_str(), pkg.entries().size());
+    app.siteId = m.id;
+    app.pagePrefs = parseWindowPrefs(m.window);
 
     // 1. Signature. Nothing below runs on an unsigned or tampered package.
     switch (pkg.verifySignature()) {
@@ -388,13 +422,60 @@ void loadRemote(App& app, const std::string& url) {
     loadPackage(app, result.packagePath);
 }
 
+// Rebuilds the shell for the page just loaded. Crossing from one site into
+// another reveals the full shell, whatever the new site asked for, until
+// Esc. A site opened directly starts the way it asked; Ctrl+L still works.
+void applyShell(App& app) {
+    const bool crossedSites = !app.shownSiteId.empty() && app.siteId != app.shownSiteId;
+    app.shownSiteId = app.siteId;
+    if (crossedSites && (!app.pagePrefs.titleBar || app.pagePrefs.addressBar == "hidden")) app.shell.force(true);
+    app.shell.build(app.pagePrefs);
+    app.shell.setAddress(app.location);
+    app.shell.setNavigation(app.historyIndex > 0, app.historyIndex + 1 < app.history.size());
+    app.shell.setFocused(false);
+    if (app.window) {
+        SDL_StopTextInput(app.window);
+        SDL_SetWindowResizable(app.window, app.pagePrefs.resizable);
+        if (app.pagePrefs.width > 0 || app.pagePrefs.height > 0) {
+            int w = 0, h = 0;
+            SDL_GetWindowSize(app.window, &w, &h);
+            int pw = 0, ph = 0;
+            SDL_GetWindowSizeInPixels(app.window, &pw, &ph);
+            const float unitsPerPixel = pw > 0 ? static_cast<float>(w) / pw : 1.0f;
+            const int nw = app.pagePrefs.width > 0 ? px(app.pagePrefs.width * app.scale * unitsPerPixel, 1) : w;
+            const int nh = app.pagePrefs.height > 0 ? px(app.pagePrefs.height * app.scale * unitsPerPixel, 1) : h;
+            if (nw != w || nh != h) SDL_SetWindowSize(app.window, nw, nh);
+        }
+    }
+}
+
+// "height": "auto": the window wraps the page. Called after every layout.
+void fitWindowToPage(App& app) {
+    if (!app.pagePrefs.autoHeight || !app.window || !app.layoutRoot) return;
+    if (SDL_GetWindowFlags(app.window) & SDL_WINDOW_MAXIMIZED) return;
+    const float contentCss = app.shell.height() + app.layoutRoot->frame.h;
+    const int wantPx = std::max(px(contentCss, app.scale), 80);
+    if (std::abs(wantPx - app.canvas.height()) <= 1) return;
+
+    int w = 0, h = 0;
+    SDL_GetWindowSize(app.window, &w, &h);
+    int pw = 0, ph = 0;
+    SDL_GetWindowSizeInPixels(app.window, &pw, &ph);
+    const float unitsPerPixel = ph > 0 ? static_cast<float>(h) / ph : 1.0f;
+    SDL_SetWindowSize(app.window, w, px(wantPx * unitsPerPixel, 1));
+}
+
 void loadPage(App& app) {
     app.script.reset();
     app.popup.visible = false;
     app.sheet = vpp::StyleSheet{};
     app.title = "VPP Viewer";
+    app.pagePrefs = WindowPrefs{};
+    app.siteId.clear();
 
-    if (vpp::isRemoteUrl(app.location)) {
+    if (app.location.empty()) {
+        loadStart(app);
+    } else if (vpp::isRemoteUrl(app.location)) {
         loadRemote(app, app.location);
     } else {
         // SDL hands main() UTF-8 arguments on every platform, so decode as
@@ -408,6 +489,7 @@ void loadPage(App& app) {
         else loadDevelopment(app, path);
     }
     if (app.window) SDL_SetWindowTitle(app.window, app.title.c_str());
+    applyShell(app);
     std::fflush(stdout);
 }
 
@@ -443,7 +525,6 @@ std::string resolveLink(const App& app, const std::string& href) {
 void relayout(App& app);
 
 void navigate(App& app, const std::string& location, bool push) {
-    if (location.empty()) return;
     if (push) {
         if (app.historyIndex + 1 < app.history.size())
             app.history.erase(app.history.begin() + static_cast<std::ptrdiff_t>(app.historyIndex + 1), app.history.end());
@@ -470,11 +551,17 @@ void goForward(App& app) {
 // --- layout and rendering ----------------------------------------------------------
 
 void relayout(App& app) {
+    const float viewportWidth = app.canvas.width() / app.scale;
+    app.shell.layout(app.fonts, viewportWidth, app.scale);
+
     const vpp::LayoutContext ctx{app.fonts, app.scale, &app.sheet};
-    app.layoutRoot = app.document ? vpp::layoutDocument(*app.document, ctx, app.canvas.width() / app.scale)
-                                  : nullptr;
+    app.layoutRoot = app.document ? vpp::layoutDocument(*app.document, ctx, viewportWidth) : nullptr;
+    // The page sits below the shell in one coordinate space, so hit testing
+    // and painting need no special cases.
+    if (app.layoutRoot) vpp::translateLayout(*app.layoutRoot, 0, app.shell.height());
     app.needsLayout = false;
     app.dirty = true;
+    fitWindowToPage(app);
 }
 
 // The canvas takes the background of <html>, else <body>, as in a browser.
@@ -523,9 +610,13 @@ void drawPopup(App& app) {
 void render(App& app) {
     app.canvas.clear(pageBackground(app));
     if (app.layoutRoot) vpp::paint(*app.layoutRoot, app.canvas, app.fonts, app.scale);
+    app.shell.paint(app.canvas, app.fonts, app.scale);
     if (app.popup.visible) drawPopup(app);
+    if (app.pagePrefs.cornerRadius > 0 && !(SDL_GetWindowFlags(app.window) & SDL_WINDOW_MAXIMIZED))
+        app.canvas.maskRoundedCorners(px(app.pagePrefs.cornerRadius, app.scale));
 
     SDL_UpdateTexture(app.texture, nullptr, app.canvas.pixels(), app.canvas.pitch());
+    SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0);
     SDL_RenderClear(app.renderer);
     SDL_RenderTexture(app.renderer, app.texture, nullptr, nullptr);
     SDL_RenderPresent(app.renderer);
@@ -540,6 +631,7 @@ bool recreateTexture(App& app, int w, int h) {
         return false;
     }
     SDL_SetTextureScaleMode(app.texture, SDL_SCALEMODE_NEAREST);
+    SDL_SetTextureBlendMode(app.texture, SDL_BLENDMODE_BLEND); // transparent corners
     return true;
 }
 
@@ -571,6 +663,36 @@ const vpp::Node* elementAt(const App& app, int x, int y) {
     return box ? box->node : nullptr;
 }
 
+void focusAddress(App& app, bool on) {
+    app.shell.setFocused(on);
+    if (on) {
+        app.shell.selectAll = true;
+        SDL_StartTextInput(app.window);
+    } else {
+        SDL_StopTextInput(app.window);
+    }
+    app.needsLayout = true;
+    app.dirty = true;
+}
+
+// Ctrl+L: reveal the full shell whatever the site asked for, and edit the address.
+void revealShell(App& app) {
+    app.shell.force(true);
+    focusAddress(app, true);
+}
+
+void onShellControl(App& app, const std::string& id) {
+    if (id == "back") goBack(app);
+    else if (id == "forward") goForward(app);
+    else if (id == "reload") { loadPage(app); relayout(app); }
+    else if (id == "minimize") SDL_MinimizeWindow(app.window);
+    else if (id == "maximize") {
+        if (SDL_GetWindowFlags(app.window) & SDL_WINDOW_MAXIMIZED) SDL_RestoreWindow(app.window);
+        else SDL_MaximizeWindow(app.window);
+    } else if (id == "close") app.running = false;
+    else if (id == "address") focusAddress(app, true);
+}
+
 void onMouseDown(App& app, int x, int y) {
     if (app.popup.visible) {
         if (app.popup.ok.contains(x, y)) {
@@ -579,6 +701,8 @@ void onMouseDown(App& app, int x, int y) {
         }
         return;
     }
+    if (app.shell.contains(x / app.scale, y / app.scale)) return;
+    if (app.shell.focused) focusAddress(app, false);
     app.pressedNode = elementAt(app, x, y);
 }
 
@@ -587,6 +711,12 @@ void onMouseUp(App& app, int x, int y) {
         if (app.popup.okPressed && app.popup.ok.contains(x, y)) app.popup.visible = false;
         app.popup.okPressed = false;
         app.dirty = true;
+        return;
+    }
+    if (app.shell.contains(x / app.scale, y / app.scale)) {
+        const std::string control = app.shell.controlAt(x / app.scale, y / app.scale);
+        if (control != "address" && app.shell.focused) focusAddress(app, false);
+        if (!control.empty()) onShellControl(app, control);
         return;
     }
 
@@ -610,17 +740,66 @@ void onMouseUp(App& app, int x, int y) {
     }
 }
 
-// Lets the user move the frameless window by dragging its top strip,
-// unless a button or link sits under the cursor.
-SDL_HitTestResult SDLCALL hitTestWindow(SDL_Window*, const SDL_Point* area, void* data) {
+// Frameless window behaviour: the window edges resize, the shell bar drags
+// (except over its controls), and with the shell hidden the top strip of
+// the page drags unless a button or link sits under the cursor.
+SDL_HitTestResult SDLCALL hitTestWindow(SDL_Window* window, const SDL_Point* area, void* data) {
     const App* app = static_cast<const App*>(data);
     if (app->popup.visible) return SDL_HITTEST_NORMAL;
     int x = 0, y = 0;
     toPixels(*app, static_cast<float>(area->x), static_cast<float>(area->y), x, y);
-    const vpp::Node* node = elementAt(*app, x, y);
-    const bool interactive = node && (node->closest("button") || node->closest("a"));
-    if (y < px(kDragStripHeight, app->scale) && !interactive) return SDL_HITTEST_DRAGGABLE;
+    const float cx = x / app->scale;
+    const float cy = y / app->scale;
+
+    if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)) {
+        const float w = app->canvas.width() / app->scale;
+        const float h = app->canvas.height() / app->scale;
+        const bool left = cx < kResizeBorder, right = cx > w - kResizeBorder;
+        const bool top = cy < kResizeBorder, bottom = cy > h - kResizeBorder;
+        if (top && left) return SDL_HITTEST_RESIZE_TOPLEFT;
+        if (top && right) return SDL_HITTEST_RESIZE_TOPRIGHT;
+        if (bottom && left) return SDL_HITTEST_RESIZE_BOTTOMLEFT;
+        if (bottom && right) return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+        if (top) return SDL_HITTEST_RESIZE_TOP;
+        if (bottom) return SDL_HITTEST_RESIZE_BOTTOM;
+        if (left) return SDL_HITTEST_RESIZE_LEFT;
+        if (right) return SDL_HITTEST_RESIZE_RIGHT;
+    }
+
+    if (app->shell.contains(cx, cy))
+        return app->shell.controlAt(cx, cy).empty() ? SDL_HITTEST_DRAGGABLE : SDL_HITTEST_NORMAL;
+
+    if (app->shell.height() == 0) {
+        const vpp::Node* node = elementAt(*app, x, y);
+        const bool interactive = node && (node->closest("button") || node->closest("a"));
+        if (cy < kDragStripHeight && !interactive) return SDL_HITTEST_DRAGGABLE;
+    }
     return SDL_HITTEST_NORMAL;
+}
+
+// Typing into the address field.
+void onTextInput(App& app, const std::string& text) {
+    if (!app.shell.focused) return;
+    if (app.shell.selectAll) {
+        app.shell.address.clear();
+        app.shell.selectAll = false;
+    }
+    app.shell.setAddress(app.shell.address + text);
+    app.needsLayout = true;
+}
+
+void submitAddress(App& app) {
+    std::string target = app.shell.address;
+    while (!target.empty() && std::isspace(static_cast<unsigned char>(target.back()))) target.pop_back();
+    while (!target.empty() && std::isspace(static_cast<unsigned char>(target.front()))) target.erase(0, 1);
+    focusAddress(app, false);
+    app.shell.force(false);
+    if (target.empty()) return;
+    // A bare host or path without a scheme is treated as https.
+    if (!vpp::isRemoteUrl(target) && target.find('.') != std::string::npos && !fs::exists(fs::u8path(target)) &&
+        target.find('/') != std::string::npos && target.find('\\') == std::string::npos && target[0] != '.')
+        target = "https://" + target;
+    navigate(app, target, true);
 }
 
 void handleEvent(App& app, const SDL_Event& e) {
@@ -629,15 +808,53 @@ void handleEvent(App& app, const SDL_Event& e) {
         app.running = false;
         break;
 
+    case SDL_EVENT_TEXT_INPUT:
+        onTextInput(app, e.text.text ? e.text.text : "");
+        break;
+
     case SDL_EVENT_KEY_DOWN: {
         const bool alt = (e.key.mod & SDL_KMOD_ALT) != 0;
+        const bool ctrl = (e.key.mod & SDL_KMOD_CTRL) != 0;
+
+        if (app.shell.focused) {
+            if (e.key.key == SDLK_ESCAPE) {
+                app.shell.setAddress(app.location);
+                focusAddress(app, false);
+                app.shell.force(false);
+            } else if (e.key.key == SDLK_RETURN || e.key.key == SDLK_KP_ENTER) {
+                submitAddress(app);
+            } else if (e.key.key == SDLK_BACKSPACE) {
+                if (app.shell.selectAll) app.shell.address.clear();
+                else if (!app.shell.address.empty()) app.shell.address.pop_back();
+                app.shell.selectAll = false;
+                app.shell.setAddress(app.shell.address);
+                app.needsLayout = true;
+            } else if (ctrl && e.key.key == SDLK_A) {
+                app.shell.selectAll = true;
+            } else if (ctrl && e.key.key == SDLK_V) {
+                if (char* clip = SDL_GetClipboardText()) {
+                    onTextInput(app, clip);
+                    SDL_free(clip);
+                }
+            } else if (ctrl && e.key.key == SDLK_L) {
+                app.shell.selectAll = true;
+            }
+            break;
+        }
+
         if (e.key.key == SDLK_ESCAPE) {
             if (app.popup.visible) {
                 app.popup.visible = false;
                 app.dirty = true;
+            } else if (app.shell.forced()) {
+                app.shell.force(false);
+                app.needsLayout = true;
+                app.dirty = true;
             } else {
                 app.running = false;
             }
+        } else if (ctrl && e.key.key == SDLK_L) {
+            revealShell(app);
         } else if (e.key.key == SDLK_R || e.key.key == SDLK_F5) {
             loadPage(app);
             relayout(app);
@@ -690,7 +907,7 @@ int main(int argc, char** argv) {
         if (arg == "--allow-unsigned") app.allowUnsigned = true;
         else if (app.location.empty()) app.location = arg;
     }
-    if (app.location.empty()) app.location = kDefaultPage;
+    // An empty location is the start page.
     app.history.push_back(app.location);
     app.historyIndex = 0;
 
@@ -698,7 +915,8 @@ int main(int argc, char** argv) {
     if (scale <= 0) scale = 1.0f;
 
     app.window = SDL_CreateWindow("VPP Viewer", px(kLogicalWidth, scale), px(kLogicalHeight, scale),
-                                  SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+                                  SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+                                      SDL_WINDOW_TRANSPARENT);
     if (!app.window) {
         std::printf("SDL_CreateWindow failed: %s\n", SDL_GetError());
         SDL_Quit();
@@ -714,6 +932,9 @@ int main(int argc, char** argv) {
     }
 
     loadFonts(app.fonts);
+    // Window preferences applied while loading (width, height) need the real scale.
+    const float windowScale = SDL_GetWindowDisplayScale(app.window);
+    if (windowScale > 0) app.scale = windowScale;
     loadPage(app);
     updateSize(app);
     if (!app.texture) {

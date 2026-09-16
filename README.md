@@ -64,19 +64,21 @@ my-site/                          site/                        (any static serve
 
 ## Viewer Concept
 
-VPP Viewer initially behaves as a minimal browser.
+The viewer is a frameless window whose frame, the **shell**, is itself a VPP page drawn by the VPP engine: back, forward, reload, the address field, and the minimize, maximize, and close buttons. Sites cannot style the shell, because it is a separate document with its own stylesheet, which is what stops a page from faking the address bar.
 
 When opened without content:
 
 ```text
 ┌───────────────────────────────────────────────┐
-│ Search or enter address                      │
+│ < > R  Enter a page address          _ [ ] X  │  shell
 ├───────────────────────────────────────────────┤
-│                                               │
-│                                               │
+│ VPP Viewer                                    │  start page
+│ Enter the address of a page in the bar above  │
 │                                               │
 └───────────────────────────────────────────────┘
 ```
+
+A site can shape the shell from the `window` object of its `vpp.json`: a theme colour for the bar, `"addressBar": "hidden"` to drop the address field, or `"titleBar": false` to hide the whole bar and draw its own. Two rules hold regardless: Ctrl+L always reveals the full shell with the real address, and moving to a different site always reveals it too. A page can hide the frame for itself, never for the site it links to.
 
 The address bar can be used for:
 
@@ -460,7 +462,8 @@ Done:
 - Phase 5 security: Ed25519 publisher signatures, verification before anything runs, publisher key pinned per application id on first use
 - Phase 6 updates: install from any static server by URL, per-resource incremental downloads, rollback refusal, atomic install, offline fallback
 - Phase 7 sites: one `.vpp` per page, one resource per source file shared by hash, links between pages with history, build-time templates (layouts, slots, includes, components with properties and scoped CSS)
+- Phase 8 shell: the viewer frame as a VPP page with address field, history buttons, window buttons, resize edges, a start page, and per-site window preferences with Ctrl+L override; rounded transparent corners, auto-height windows, and inline SVG icons for sites that draw their own frame
 
-Next: the runtime half of the template specification (bindings, events, component scripts), then the address bar and start page.
+Next: the runtime half of the template specification (bindings, events, component scripts), then storage and assets.
 
 Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.

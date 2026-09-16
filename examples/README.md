@@ -57,6 +57,24 @@ Tests:
 - navigation between page packages, locally and over HTTP, with history
 - identical rendering in development mode and from compiled packages
 
+## app-window
+
+The same kind of page presented as an application window. The site's `vpp.json` hides the viewer's bar, rounds the window corners, and lets the window wrap the page's height. The page fills the window edge to edge and supplies its own menu and minimize, maximize, and close buttons, drawn from Bootstrap Icons SVG files that the engine fills as vector paths. The title row drags the window. Ctrl+L shows the viewer's address bar; Esc hides it again. Switching to the About page makes the window shorter, because the page is.
+
+```text
+examples/app-window/
+├── vpp.json              "window": { "titleBar": false, "cornerRadius": 12, "width": 800, "height": "auto", ... }
+├── pages/home.html       title row with icon menu and icon buttons, stats, buttons
+├── pages/about.html
+├── assets/icons/*.svg    Bootstrap Icons (MIT), pasted in with <vpp-include>
+├── styles/app.css        no body margin, icon sizes, icon button colours
+└── scripts/app.js        minimize, maximize, close; counter; popup
+```
+
+```text
+build\viewer\vpp_viewer.exe examples\app-window\pages\home.html
+```
+
 ## Planned
 
 ```text

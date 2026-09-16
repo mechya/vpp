@@ -15,6 +15,8 @@ struct ScriptCallbacks {
     std::function<void(const std::string&)> log;    // console.log
     std::function<void(const std::string&)> popup;  // VPP.window.popup(message)
     std::function<void()> close;                    // VPP.window.close()
+    std::function<void()> minimize;                 // VPP.window.minimize()
+    std::function<void()> maximize;                 // VPP.window.maximize() (toggles restore)
     std::function<void()> invalidate;               // the DOM changed; layout must run again
 };
 

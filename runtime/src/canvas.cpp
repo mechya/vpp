@@ -72,6 +72,31 @@ void Canvas::fillRect(Rect r, Color c) {
             blendPixel(x, y, c);
 }
 
+void Canvas::maskRoundedCorners(int radius) {
+    radius = std::clamp(radius, 0, std::min(width_, height_) / 2);
+    if (radius == 0) return;
+    const float rad = static_cast<float>(radius);
+    const float cxL = rad - 0.5f, cxR = static_cast<float>(width_ - radius) - 0.5f;
+    const float cyT = rad - 0.5f, cyB = static_cast<float>(height_ - radius) - 0.5f;
+
+    auto maskCorner = [&](int x0, int y0, float cx, float cy) {
+        for (int y = y0; y < y0 + radius; ++y) {
+            for (int x = x0; x < x0 + radius; ++x) {
+                const float dist = std::sqrt((static_cast<float>(x) - cx) * (static_cast<float>(x) - cx) +
+                                             (static_cast<float>(y) - cy) * (static_cast<float>(y) - cy));
+                const float coverage = std::clamp(rad + 0.5f - dist, 0.0f, 1.0f);
+                uint32_t& px = pixels_[static_cast<size_t>(y) * width_ + x];
+                const uint32_t alpha = static_cast<uint32_t>(coverage * 255.0f + 0.5f);
+                px = (px & 0x00FFFFFFu) | (alpha << 24);
+            }
+        }
+    };
+    maskCorner(0, 0, cxL, cyT);
+    maskCorner(width_ - radius, 0, cxR, cyT);
+    maskCorner(0, height_ - radius, cxL, cyB);
+    maskCorner(width_ - radius, height_ - radius, cxR, cyB);
+}
+
 void Canvas::fillRoundRect(Rect r, int radius, Color c) {
     radius = std::clamp(radius, 0, std::min(r.w, r.h) / 2);
     if (radius == 0) {

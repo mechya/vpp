@@ -65,4 +65,7 @@ std::unique_ptr<LayoutBox> layoutDocument(const Node& document, const LayoutCont
 // Deepest box with a DOM node under (x, y), or null.
 const LayoutBox* hitTest(const LayoutBox& root, float x, float y);
 
+// Moves a laid-out tree by (dx, dy), for stacking documents in one window.
+void translateLayout(LayoutBox& root, float dx, float dy);
+
 } // namespace vpp

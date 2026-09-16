@@ -10,7 +10,7 @@ namespace vpp {
 
 namespace {
 
-constexpr uint16_t kPackageVersion = 2; // 2: added the page name to the manifest
+constexpr uint16_t kPackageVersion = 3; // 2: page name; 3: window preferences
 const char kMagic[4] = {'V', 'P', 'P', 'K'};
 
 // --- minimal JSON: one flat object of scalar values -----------------------------
@@ -164,6 +164,7 @@ bool parseAppManifest(const std::string& json, AppManifest& out, std::string* er
     m.id = fields["id"];
     m.name = fields["name"];
     m.version = fields["version"];
+    m.window = fields["window"];
     if (m.id.empty()) {
         if (error) *error = "vpp.json: \"id\" is required, e.g. \"com.example.hello\"";
         return false;
@@ -186,6 +187,7 @@ std::vector<uint8_t> Package::build(const AppManifest& manifest,
     w.str(manifest.name);
     w.str(manifest.version);
     w.str(manifest.page);
+    w.str(manifest.window);
 
     w.u32(static_cast<uint32_t>(resources.size()));
     uint64_t offset = 0;
@@ -266,6 +268,7 @@ bool Package::parse(std::vector<uint8_t> file, bool headerOnly, Package& out, st
     pkg.manifest_.name = r.str();
     pkg.manifest_.version = r.str();
     pkg.manifest_.page = r.str();
+    pkg.manifest_.window = r.str();
 
     const uint32_t count = r.count();
     std::set<std::string> names;

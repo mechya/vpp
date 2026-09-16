@@ -1,0 +1,12 @@
+{
+  "id": "org.vpp.examples.app-window",
+  "name": "App Window",
+  "version": "1.0.0",
+  "window": {
+    "titleBar": false,
+    "theme": "#2563eb",
+    "cornerRadius": 12,
+    "width": 800,
+    "height": "auto"
+  }
+}

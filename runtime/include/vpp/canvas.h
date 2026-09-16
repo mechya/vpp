@@ -45,6 +45,10 @@ public:
     // Blends c onto (x, y). coverage scales the alpha, 0..255.
     void blendPixel(int x, int y, Color c, uint8_t coverage = 255);
 
+    // Makes the pixels outside a rounded rectangle covering the whole canvas
+    // transparent, with antialiased corners. For rounded window corners.
+    void maskRoundedCorners(int radius);
+
 private:
     int width_;
     int height_;

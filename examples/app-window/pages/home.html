@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>App Window</title>
+  <link rel="stylesheet" href="/styles/app.css">
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <nav class="menu">
+        <a href="home.vpp"><vpp-include src="/assets/icons/house-fill.svg" /> Home</a>
+        <a href="about.vpp"><vpp-include src="/assets/icons/info-circle.svg" /> About</a>
+      </nav>
+      <div class="controls">
+        <button id="minimize" class="icon"><vpp-include src="/assets/icons/dash-lg.svg" /></button>
+        <button id="maximize" class="icon"><vpp-include src="/assets/icons/square.svg" /></button>
+        <button id="close" class="icon close"><vpp-include src="/assets/icons/x-lg.svg" /></button>
+      </div>
+    </div>
+
+    <h1>Hello, VPP</h1>
+    <p class="muted">No viewer bar, rounded corners, and a window that wraps the page. The buttons are icons drawn by the engine.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="value" id="count-value">0</div><div class="label">clicks</div></div>
+      <div class="stat"><div class="value">2</div><div class="label">pages</div></div>
+      <div class="stat highlight"><div class="value">App</div><div class="label">window</div></div>
+    </div>
+
+    <p>Drag the title row to move the window. Press <b>Ctrl+L</b> to see the address bar.</p>
+
+    <div class="actions">
+      <button id="reset" class="secondary">Reset</button>
+      <button id="hello">Click me</button>
+    </div>
+
+    <p class="footer">App Window example, built with VPP. Icons: Bootstrap Icons, MIT.</p>
+  </div>
+  <script src="/scripts/app.js"></script>
+</body>
+</html>

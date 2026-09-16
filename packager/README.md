@@ -30,7 +30,7 @@ A site needs a `vpp.json` in its root:
 }
 ```
 
-`id` identifies the site, is shared by all its pages, and should never change. `name` is what users see. `version` is free-form. `components` is optional and read by the compiler.
+`id` identifies the site, is shared by all its pages, and should never change. `name` is what users see. `version` is free-form. `components` is optional and read by the compiler. An optional `window` object sets the viewer shell's theme colour and whether the address bar or the whole bar is shown; see `viewer/README.md`. It travels inside every page's manifest and is covered by the signature.
 
 ```text
 build\compiler\vppc.exe examples\hello-world

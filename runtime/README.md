@@ -45,7 +45,9 @@ Inherited: `color`, `font-size`, `font-weight`, `text-align`.
 - Widths are content-box: `width` plus padding plus border. `max-width` with `margin: 0 auto` centres a block.
 - Layout works in CSS pixels; paint multiplies by the display scale.
 
-Not yet: images, scrolling, `position`, floats, grid, flex wrapping, line-height, non-ASCII text.
+- Inline `<svg>` elements are replaced boxes sized by their `width` and `height` attributes or CSS. Every `<path>` inside is filled by the engine's own vector rasteriser (`vpp/svg.h`): M, L, H, V, C, S, Q, T, A, and Z commands, nonzero or even-odd winding, antialiased. `fill="currentColor"` or no fill uses the CSS `color`. Enough for icon sets such as Bootstrap Icons.
+
+Not yet: raster images, strokes and other SVG features, scrolling, `position`, floats, grid, flex wrapping, line-height, non-ASCII text.
 
 ## Security
 

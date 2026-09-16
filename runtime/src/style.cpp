@@ -234,6 +234,10 @@ void applyUserAgentStyle(const Node& element, const ComputedStyle& parent, Compu
     } else if (tag == "b" || tag == "strong") {
         s.display = Display::Inline;
         s.bold = true;
+    } else if (tag == "svg") {
+        s.display = Display::InlineBlock; // replaced: sized by attributes or CSS, painted as paths
+    } else if (tag == "path" || tag == "defs" || tag == "title" || tag == "desc") {
+        s.display = Display::None;
     } else {
         s.display = Display::Inline;
     }
@@ -358,6 +362,22 @@ void applyDeclaration(const Declaration& d, const ComputedStyle& parent, Compute
 
 ComputedStyle initialStyle() {
     return ComputedStyle{};
+}
+
+bool parseCssColor(const std::string& text, Color& out) {
+    return parseColor(lower(text), out);
+}
+
+bool replacedSize(const Node& element, const ComputedStyle& style, float& width, float& height) {
+    if (!element.isElement() || element.tag() != "svg") return false;
+    auto attr = [&](const char* name, float fallback) {
+        const std::string* v = element.attribute(name);
+        float n = 0;
+        return v && parseNumber(*v, n) ? n : fallback;
+    };
+    width = style.width.unit == Length::Unit::Px ? style.width.value : attr("width", 16.0f);
+    height = style.height.unit == Length::Unit::Px ? style.height.value : attr("height", 16.0f);
+    return true;
 }
 
 ComputedStyle computeStyle(const Node& element, const ComputedStyle& parent, const StyleSheet* sheet) {

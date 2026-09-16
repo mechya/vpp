@@ -72,6 +72,12 @@ struct ComputedStyle {
 // Style for the root of the tree, before any element is considered.
 ComputedStyle initialStyle();
 
+// Parses a CSS colour: names, #hex, rgb(), rgba(), transparent.
+bool parseCssColor(const std::string& text, Color& out);
+
+// Replaced elements (currently <svg>) have an intrinsic size instead of content.
+bool replacedSize(const Node& element, const ComputedStyle& style, float& width, float& height);
+
 // Resolves an element's style: the built-in user-agent defaults, then the
 // matching rules of the stylesheet in cascade order, then the element's
 // style="" attribute, with inherited properties taken from the parent.

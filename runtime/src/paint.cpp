@@ -1,7 +1,12 @@
 #include "vpp/paint.h"
 
+#include "vpp/svg.h"
+
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <functional>
+#include <sstream>
 
 namespace vpp {
 
@@ -40,8 +45,59 @@ void paintBackgroundAndBorder(const LayoutBox& box, Canvas& canvas, float scale)
     }
 }
 
+// Inline <svg>: every <path> descendant is filled. The viewBox is fitted into
+// the content box, preserving aspect ratio, as SVG's default does.
+void paintSvg(const LayoutBox& box, Canvas& canvas, float scale) {
+    const Node& svg = *box.node;
+    const ComputedStyle& s = box.style;
+    const float inset = s.borderWidth;
+    const RectF content{box.frame.x + s.padding.left + inset, box.frame.y + s.padding.top + inset,
+                        box.frame.w - s.padding.left - s.padding.right - 2 * inset,
+                        box.frame.h - s.padding.top - s.padding.bottom - 2 * inset};
+
+    float vbX = 0, vbY = 0, vbW = content.w, vbH = content.h;
+    if (const std::string* vb = svg.attribute("viewbox")) {
+        std::istringstream in(*vb);
+        float a, b, c, d;
+        if (in >> a >> b >> c >> d && c > 0 && d > 0) {
+            vbX = a;
+            vbY = b;
+            vbW = c;
+            vbH = d;
+        }
+    }
+    const float fit = std::min(content.w / vbW, content.h / vbH) * scale;
+    PathTransform t;
+    t.scale = fit;
+    t.tx = (content.x + (content.w - vbW * fit / scale) / 2) * scale - vbX * fit;
+    t.ty = (content.y + (content.h - vbH * fit / scale) / 2) * scale - vbY * fit;
+
+    const std::string* svgFill = svg.attribute("fill");
+    std::function<void(const Node&)> visit = [&](const Node& n) {
+        if (n.isElement() && n.tag() == "path") {
+            const std::string* d = n.attribute("d");
+            const std::string* fill = n.attribute("fill") ? n.attribute("fill") : svgFill;
+            if (!d) return;
+            Color color = s.color;
+            if (fill && *fill != "currentcolor" && *fill != "currentColor") {
+                if (*fill == "none") return;
+                parseCssColor(*fill, color);
+            }
+            const std::string* rule = n.attribute("fill-rule");
+            fillSvgPath(canvas, *d, t, color, rule && *rule == "evenodd");
+        }
+        for (const auto& c : n.children()) visit(*c);
+    };
+    visit(svg);
+}
+
 void paintBox(const LayoutBox& box, Canvas& canvas, const FontSet& fonts, float scale) {
     paintBackgroundAndBorder(box, canvas, scale);
+
+    if (box.node && box.node->tag() == "svg") {
+        paintSvg(box, canvas, scale);
+        return;
+    }
 
     if (!box.lines.empty()) {
         for (const Line& line : box.lines) {

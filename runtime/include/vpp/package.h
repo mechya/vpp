@@ -18,6 +18,7 @@ struct AppManifest {
     std::string name;    // shown to users
     std::string version; // free-form, e.g. "1.0.0"
     std::string page;    // page name within the site, e.g. "home"; set by the packager
+    std::string window;  // the "window" object of vpp.json as JSON text, or empty: shell preferences
 };
 
 // Parses the flat JSON object of vpp.json. Only string values are used.

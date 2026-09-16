@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>About</title>
+  <link rel="stylesheet" href="/styles/app.css">
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <nav class="menu">
+        <a href="home.vpp"><vpp-include src="/assets/icons/house-fill.svg" /> Home</a>
+        <a href="about.vpp"><vpp-include src="/assets/icons/info-circle.svg" /> About</a>
+      </nav>
+      <div class="controls">
+        <button id="minimize" class="icon"><vpp-include src="/assets/icons/dash-lg.svg" /></button>
+        <button id="maximize" class="icon"><vpp-include src="/assets/icons/square.svg" /></button>
+        <button id="close" class="icon close"><vpp-include src="/assets/icons/x-lg.svg" /></button>
+      </div>
+    </div>
+
+    <h1>About</h1>
+    <p>The site's vpp.json sets <b>titleBar</b> to false, <b>cornerRadius</b> to 12, and <b>height</b> to auto. The viewer draws no bar, rounds the window, and sizes it to this page, so the window is shorter here than on the home page.</p>
+    <p>The icons are Bootstrap Icons SVG files pasted in with <b>vpp-include</b> and filled by the engine's path renderer. The buttons call <b>VPP.window.minimize()</b>, <b>maximize()</b>, and <b>close()</b>.</p>
+    <p>Ctrl+L always brings the viewer's bar back with the real address, and Esc hides it again.</p>
+
+    <p class="footer">App Window example, built with VPP. Icons: Bootstrap Icons, MIT.</p>
+  </div>
+  <script src="/scripts/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+These icons are from Bootstrap Icons (https://icons.getbootstrap.com), MIT licensed.
+Copyright (c) 2019-2024 The Bootstrap Authors.

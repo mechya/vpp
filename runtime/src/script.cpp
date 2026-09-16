@@ -173,6 +173,18 @@ struct ScriptHost::Impl {
         return JS_UNDEFINED;
     }
 
+    static JSValue windowMinimize(JSContext* c, JSValueConst, int, JSValueConst*) {
+        Impl* self = from(c);
+        if (self->callbacks.minimize) self->callbacks.minimize();
+        return JS_UNDEFINED;
+    }
+
+    static JSValue windowMaximize(JSContext* c, JSValueConst, int, JSValueConst*) {
+        Impl* self = from(c);
+        if (self->callbacks.maximize) self->callbacks.maximize();
+        return JS_UNDEFINED;
+    }
+
     // --- setup -----------------------------------------------------------------
 
     void installGlobals() {
@@ -201,6 +213,8 @@ struct ScriptHost::Impl {
         JSValue window = JS_NewObject(ctx);
         setMethod(window, "popup", windowPopup, 1);
         setMethod(window, "close", windowClose, 0);
+        setMethod(window, "minimize", windowMinimize, 0);
+        setMethod(window, "maximize", windowMaximize, 0);
         JSValue vpp = JS_NewObject(ctx);
         JS_SetPropertyStr(ctx, vpp, "window", window);
         JS_SetPropertyStr(ctx, global, "VPP", vpp);

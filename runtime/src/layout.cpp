@@ -171,6 +171,8 @@ void Layouter::measureInlineRun(const Node& parent, const ComputedStyle& style, 
 
 float Layouter::maxContentWidth(const Node& node, const ComputedStyle& style) {
     const Insets in = insetsOf(style);
+    float rw = 0, rh = 0;
+    if (replacedSize(node, style, rw, rh)) return rw + in.left + in.right;
     if (style.width.unit == Length::Unit::Px) return style.width.value + in.left + in.right;
 
     float content = 0;
@@ -227,9 +229,16 @@ void Layouter::layoutWithWidth(LayoutBox& box, float x, float y, float borderBox
     box.frame = {x, y, borderBoxWidth, 0};
     box.children.clear();
     box.lines.clear();
-    layoutContent(box);
 
     const ComputedStyle& s = box.style;
+    float rw = 0, rh = 0;
+    if (box.node && replacedSize(*box.node, s, rw, rh)) {
+        const Insets in = insetsOf(s);
+        box.frame.h = rh + in.top + in.bottom;
+        box.baseline = box.frame.h;
+        return;
+    }
+    layoutContent(box);
     if (s.height.unit == Length::Unit::Px) {
         const Insets in = insetsOf(s);
         box.frame.h = s.height.value + in.top + in.bottom;
@@ -252,6 +261,8 @@ void Layouter::layoutInlineLevel(LayoutBox& box, float availableWidth) {
 
     layoutWithWidth(box, 0, 0, std::max(w, 0.0f));
 
+    float rw = 0, rh = 0;
+    if (replacedSize(*box.node, s, rw, rh)) return; // baseline set by layoutWithWidth
     float baseline = 0;
     box.baseline = firstBaseline(box, baseline) ? baseline : box.frame.h;
 }
@@ -665,6 +676,21 @@ const LayoutBox* hitTest(const LayoutBox& root, float x, float y) {
     for (const auto& child : root.children)
         if (const LayoutBox* hit = hitTest(*child, x, y)) return hit;
     return root.node ? &root : nullptr;
+}
+
+void translateLayout(LayoutBox& root, float dx, float dy) {
+    root.frame.x += dx;
+    root.frame.y += dy;
+    for (Line& line : root.lines) {
+        line.rect.x += dx;
+        line.rect.y += dy;
+        for (Fragment& f : line.fragments) {
+            f.rect.x += dx;
+            f.rect.y += dy;
+        }
+    }
+    for (auto& child : root.children)
+        translateLayout(*child, dx, dy);
 }
 
 } // namespace vpp

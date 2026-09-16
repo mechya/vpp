@@ -13,6 +13,7 @@ add_library(vpp_runtime STATIC
   src/script.cpp
   src/sha256.cpp
   src/style.cpp
+  src/svg.cpp
   src/template.cpp
 )
 
