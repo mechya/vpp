@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <vpp-slot name="head" />
+  <link rel="stylesheet" href="/styles/global.css">
+</head>
+<body>
+  <div class="card">
+    <nav class="menu">
+      <a href="home.vpp">Home</a>
+      <a href="about.vpp">About</a>
+    </nav>
+
+    <vpp-slot />
+
+    <vpp-include src="/includes/footer.html" />
+  </div>
+  <vpp-slot name="scripts">
+    <script src="/scripts/app.js"></script>
+  </vpp-slot>
+</body>
+</html>

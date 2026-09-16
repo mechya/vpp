@@ -1,0 +1,29 @@
+<vpp-layout src="/layouts/main.html">
+
+  <vpp-fill slot="head">
+    <title>Home</title>
+  </vpp-fill>
+
+  <vpp-fill>
+    <h1>Hello, VPP</h1>
+    <p class="muted">This page is built from a layout, an include, and a component.</p>
+
+    <div class="stats">
+      <stat-card value="0" label="clicks" value-id="count-value" />
+      <stat-card value="2" label="pages" />
+      <stat-card value="Site" label="milestone" highlight />
+    </div>
+
+    <p>Click <b>About</b> in the menu to open the second page of this site.</p>
+
+    <div class="actions">
+      <button id="reset" class="secondary">Reset</button>
+      <button id="hello">Click me</button>
+    </div>
+  </vpp-fill>
+
+  <vpp-fill slot="scripts" mode="append">
+    <script src="/scripts/home.js"></script>
+  </vpp-fill>
+
+</vpp-layout>

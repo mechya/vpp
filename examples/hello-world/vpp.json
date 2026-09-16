@@ -1,0 +1,8 @@
+{
+  "id": "org.vpp.examples.hello-world",
+  "name": "Hello World",
+  "version": "1.0.0",
+  "components": {
+    "stat-card": "/components/stat-card"
+  }
+}

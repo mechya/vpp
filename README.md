@@ -6,37 +6,61 @@ It combines familiar web technologies with a lightweight native viewer, applicat
 
 ## Core Idea
 
+**One `.vpp` file is one page.** A VPP application, or site, is a folder of page packages that link to each other, the way web pages link to each other.
+
 Development:
 
 ```text
-HTML
-CSS
-JavaScript
+pages/home.html  +  layouts, includes, components, CSS, JavaScript
    ↓
-VPP Compiler
+VPP Compiler        expands the layout and components into the page
    ↓
-Compiled binary resources
+dom.bin  style.bin  code.bin
    ↓
-.vpp package
+VPP Packager        hashes, signs
+   ↓
+home.vpp
 ```
 
 Execution:
 
 ```text
-.vpp
+home.vpp (local file or URL)
  ↓
 VPP Viewer
  ↓
-Verify package
+Verify signature, publisher, and resource hashes
  ↓
 Load resources
  ↓
 Execute compiled JavaScript
  ↓
-Display application
+Display page
+ ↓
+Click a link to profile.vpp → same steps for that page
 ```
 
-A normal web address can also be opened directly inside VPP Viewer.
+Layouts, includes, and components exist only in the source tree. The compiler dissolves them into each page, so a page package is complete on its own.
+
+## Pages, Sites, and Downloads
+
+```text
+my-site/                          site/                        (any static server)
+├── vpp.json                      ├── home.vpp
+├── pages/home.html          →    ├── profile.vpp
+├── pages/profile.html            ├── home.vppm     manifests for update checks
+├── layouts/main.html             ├── profile.vppm
+├── components/user-card/         └── res/          resources by SHA-256,
+├── styles/global.css                 ├── 3f9a…     shared between pages
+└── scripts/app.js                    └── b87a…
+```
+
+- **Pages download on demand.** Opening `home.vpp` fetches only what home needs. `profile.vpp` is fetched the first time it is visited. A site with fifty pages costs one page's download to start using.
+- **Shared resources download once.** Resources are stored by hash. Two pages that use the same stylesheet reference the same `style.bin`, which is downloaded and kept once.
+- **Downloaded pages stay until they change.** Every visited page lives in the viewer's store on disk. Reopening it costs one small request for the manifest; if nothing changed, the page runs from disk. If the server is unreachable, the page runs from disk anyway.
+- **Updates are per resource.** When a page's manifest shows a new version, only the resources whose hashes differ are downloaded. Older versions offered by a server are refused.
+- **Each page is its own program.** Moving to another page ends the current page's JavaScript and starts the next page's, as on a classic multi-page website. State that must survive navigation goes through the storage API.
+- **One publisher per site.** All pages of a site carry the site id and are signed with the same key. The viewer pins that key to the site id on first use.
 
 ## Viewer Concept
 
@@ -56,12 +80,12 @@ When opened without content:
 
 The address bar can be used for:
 
-- URLs
-- Web searches
+- URLs of `.vpp` pages
 - VPP links
-- Local `.vpp` applications
+- Local `.vpp` pages
+- Installed sites
 
-After a page or VPP application is opened, the address bar can automatically hide.
+After a page is opened, the address bar can automatically hide.
 
 `Ctrl + L` can reveal and focus it again.
 
@@ -70,12 +94,12 @@ After a page or VPP application is opened, the address bar can automatically hid
 VPP aims to provide:
 
 - Minimal frameless viewer
-- Normal web browsing
+- Navigation between pages, with back and forward
 - HTML and CSS based interfaces
 - Existing JavaScript development workflow
 - JavaScript compilation into binary form
-- `.vpp` application packaging
-- Offline application execution
+- `.vpp` page packaging
+- Offline execution of every page already visited
 - Signed applications
 - Encrypted application resources
 - Incremental updates
@@ -131,12 +155,11 @@ vpp/
 
 Native VPP application responsible for displaying:
 
-- normal websites
-- VPP applications
-- address/search interface
+- VPP pages, local or from a URL
+- address interface
 - windows
 - tabs
-- navigation
+- navigation between pages
 
 ### VPP Runtime
 
@@ -159,61 +182,56 @@ Responsibilities include:
 
 `compiler/`
 
-Converts application source code into VPP-compatible compiled resources.
-
-Initial target:
+Converts page source into VPP-compatible compiled resources, one set per page.
 
 ```text
-JavaScript
+pages/home.html + layouts + components + CSS + JavaScript
    ↓
 VPP Compiler
    ↓
-code.bin
+dist/home/dom.bin  style.bin  code.bin
 ```
 
-Development source files remain readable during development but do not need to be distributed with release applications.
+Layouts, includes, and components are expanded into the page at this step. Development source files remain readable during development but are not distributed.
 
 ### VPP Packager
 
 `packager/`
 
-Creates the final `.vpp` application package.
+Creates one signed `.vpp` package per page, and publishes a site folder that any static server can host.
 
 Example:
 
 ```text
-Application source
+pages/home.html, pages/profile.html
        ↓
-     build
+     compile
        ↓
-Compiled resources
+dist/home, dist/profile
        ↓
-    package
+  package and sign
        ↓
-weather.vpp
+home.vpp, profile.vpp  +  home.vppm, profile.vppm  +  res/
 ```
 
 ### VPP Updater
 
 `updater/`
 
-Handles signed incremental application updates.
+Handles installing pages from a URL and keeping them current.
 
-Only files that changed should need to be downloaded.
+Only resources that changed are downloaded, and a resource shared by several pages is downloaded once.
 
 Example:
 
 ```text
-Installed
+Installed profile.vpp 1.0.0        Server offers profile.vpp 1.0.1
 
-ui.bin       unchanged
-style.bin    unchanged
-code.bin     changed
-assets.bin   unchanged
+dom.bin      3f9a…                  dom.bin      3f9a…   unchanged
+style.bin    b87a…                  style.bin    e21c…   changed
+code.bin     dfb2…                  code.bin     dfb2…   unchanged
 
-Download
-
-code.bin only
+Download: style.bin only. Then home.vpp, which shares it, is current too.
 ```
 
 ### VPP SDK
@@ -255,19 +273,23 @@ Contains small applications used to test VPP features and demonstrate developmen
 
 ## VPP Package
 
-A future `.vpp` application could internally contain resources such as:
+A `.vpp` file is one page:
 
 ```text
-weather.vpp
+home.vpp
 │
-├── manifest.bin
-├── dom.bin
-├── style.bin
-├── code.bin
-└── assets.bin
+├── manifest       site id, page name, version
+├── entries        name, size, SHA-256 of each resource
+├── publisher key  Ed25519
+├── signature      over the manifest and entries
+│
+├── dom.bin        the finished page, layout and components expanded
+├── style.bin      the page's stylesheets, parsed
+├── code.bin       the page's scripts, compiled
+└── assets.bin     images and fonts (planned)
 ```
 
-The exact package specification will be defined as the project develops.
+The exact byte layout is documented in `packager/README.md`.
 
 ## Security Model
 
@@ -284,9 +306,9 @@ A VPP Viewer should execute an application update only after verifying its publi
 
 ## Incremental Updates
 
-VPP applications should not require downloading the entire package after every update.
+A page never needs downloading in full after the first visit.
 
-The update system should compare resource hashes.
+On each visit the viewer fetches the page's small manifest and compares resource hashes with its store.
 
 ```text
 local hash
@@ -296,7 +318,29 @@ compare
 remote hash
 ```
 
-Only changed resources are downloaded.
+Only changed resources are downloaded. Unchanged ones, including those shared with other pages, are reused from disk. If the manifest cannot be fetched, the stored page runs.
+
+## Template Syntax
+
+Pages are assembled from layouts, includes, and components rather than written as single HTML files. Each page still compiles to its own `.vpp`; the layout and components are expanded into it. The syntax stays close to HTML and uses the `vpp-` prefix for its own elements:
+
+```html
+<vpp-layout src="/layouts/main.html">
+    <vpp-fill slot="sidebar">
+        <nav>...</nav>
+    </vpp-fill>
+    <vpp-fill>
+        <user-card name="Bhupesh" role="Developer" />
+    </vpp-fill>
+</vpp-layout>
+```
+
+The full draft is in [docs/template-syntax.md](docs/template-syntax.md). It splits into two parts:
+
+- **Build-time templating** — includes, layouts, slots and fills, components with literal properties, scoped component CSS, aliases. The compiler resolves all of it into a plain `dom.bin`; the viewer never sees a template. Planned next for the compiler.
+- **Runtime templating** — expression properties, text and attribute bindings, event bindings, conditional rendering, component JavaScript and lifecycle. This needs a runtime framework and a design document of its own, starting with what `{{ }}` means and how updates are triggered.
+
+The appendix of that document lists the decisions to settle before implementation, in particular the meaning of `{{ }}` and how self-closing custom tags and slots inside `<head>` survive HTML parsing.
 
 ## Development Mode
 
@@ -405,6 +449,18 @@ Debug information should normally remain outside the distributed package.
 
 ## Status
 
-VPP is currently in the architecture and early prototyping stage.
+VPP has a working vertical slice on Windows. See `viewer/README.md` for how to build and run it.
 
-The first implementation target is the VPP Viewer.
+Done:
+
+- Phase 1 viewer: frameless native window, own rendering engine (DOM, CSS cascade, block, inline, and flex layout, painting)
+- Phase 2 runtime: JavaScript execution with DOM bindings, events, and the `VPP.window` API
+- Phase 3 compiler: HTML → `dom.bin`, CSS → `style.bin`, JavaScript → `code.bin` with source stripped
+- Phase 4 package: `.vpp` container with manifest and per-resource SHA-256, opened directly by the viewer
+- Phase 5 security: Ed25519 publisher signatures, verification before anything runs, publisher key pinned per application id on first use
+- Phase 6 updates: install from any static server by URL, per-resource incremental downloads, rollback refusal, atomic install, offline fallback
+- Phase 7 sites: one `.vpp` per page, one resource per source file shared by hash, links between pages with history, build-time templates (layouts, slots, includes, components with properties and scoped CSS)
+
+Next: the runtime half of the template specification (bindings, events, component scripts), then the address bar and start page.
+
+Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.

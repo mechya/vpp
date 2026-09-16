@@ -1,0 +1,52 @@
+body {
+  background-color: #e4e4e7;
+  color: #18181b;
+  margin: 0;
+  padding: 32px 16px;
+}
+.card {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 28px;
+  background-color: white;
+  border: 1px solid #d4d4d8;
+  border-radius: 12px;
+}
+.menu {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.menu a {
+  color: #2563eb;
+  font-weight: bold;
+}
+h1 {
+  font-size: 28px;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+.muted {
+  color: #71717a;
+  font-size: 14px;
+  margin-top: 0;
+}
+.stats {
+  display: flex;
+  gap: 12px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+button.secondary {
+  background-color: #e4e4e7;
+  color: #18181b;
+}
+.footer {
+  color: #a1a1aa;
+  font-size: 12px;
+  margin-bottom: 0;
+}

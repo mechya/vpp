@@ -1,0 +1,19 @@
+/* Scoped to stat-card by the compiler. */
+.stat {
+  flex: 1;
+  padding: 12px;
+  background-color: #f4f4f5;
+  border-radius: 8px;
+  text-align: center;
+}
+.stat.true {
+  background-color: #dbeafe;
+}
+.value {
+  font-size: 24px;
+  font-weight: bold;
+}
+.label {
+  font-size: 12px;
+  color: #71717a;
+}

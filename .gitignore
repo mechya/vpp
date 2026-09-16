@@ -1,0 +1,18 @@
+# Build output
+build/
+out/
+.vs/
+.vscode/
+CMakeUserPresets.json
+
+# Compiled artifacts
+*.obj
+*.o
+*.exe
+*.pdb
+*.ilk
+*.vpp
+*.bin
+dist/
+*.key
+*.pub

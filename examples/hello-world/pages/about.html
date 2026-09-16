@@ -1,0 +1,16 @@
+<vpp-layout src="/layouts/main.html">
+
+  <vpp-fill slot="head">
+    <title>About</title>
+  </vpp-fill>
+
+  <vpp-fill>
+    <h1>About this site</h1>
+    <p>Each page of a VPP site is its own signed package. The layout, the footer include, and the components are expanded into every page by the compiler.</p>
+    <p>The stylesheet and script shared with the home page are stored once and downloaded once, because resources are addressed by hash.</p>
+    <stat-card value="1" label="shared stylesheet" />
+    <p class="value">This paragraph has class "value" too, but it is outside the component, so the component's scoped .value rule does not reach it.</p>
+    <p>Use <b>Home</b> in the menu, or press <b>Alt+Left</b>, to go back.</p>
+  </vpp-fill>
+
+</vpp-layout>
