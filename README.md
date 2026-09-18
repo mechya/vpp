@@ -117,7 +117,9 @@ VPP aims to provide:
 vpp/
 │
 ├── README.md
-├── LICENSE
+├── LICENSE.md
+├── COMMERCIAL-LICENSING.md
+├── THIRD-PARTY-NOTICES.md
 ├── .gitignore
 │
 ├── viewer/
@@ -467,3 +469,45 @@ Done:
 Next: the runtime half of the template specification (bindings, events, component scripts), then storage and assets.
 
 Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.
+
+## License
+
+**VPP — Viewer Package Platform** is source-available software under the VPP Source-Available License 1.0. See [LICENSE.md](LICENSE.md). The licence text is a draft pending legal review; the placeholders for the copyright holder, effective date, contact, and jurisdiction are still to be filled in.
+
+### Free Use
+
+VPP is free for:
+
+- personal use;
+- education;
+- research;
+- evaluation;
+- non-commercial projects;
+- commercial Products with less than **US$100,000 in Annual Gross Product Revenue**.
+
+### Paid Commercial Use
+
+When a Product or service using VPP reaches **US$100,000 or more in Annual Gross Product Revenue**, continued commercial use requires a paid VPP commercial license.
+
+Current standard annual pricing:
+
+| Product Revenue | VPP License |
+|---:|---:|
+| Below US$100,000 | Free |
+| US$100,000 – US$499,999 | US$1,000/year |
+| US$500,000 – US$1,999,999 | US$5,000/year |
+| US$2,000,000 – US$9,999,999 | US$15,000/year |
+| US$10,000,000 – US$49,999,999 | US$35,000/year |
+| US$50,000,000+ | Contact for enterprise pricing |
+
+Commercial licensing is based primarily on the revenue of the specific Product using VPP, not unrelated company revenue.
+
+See:
+
+- [LICENSE.md](LICENSE.md)
+- [COMMERCIAL-LICENSING.md](COMMERCIAL-LICENSING.md)
+- [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the licences of the libraries VPP builds on
+
+### Sponsorship
+
+Sponsorships and donations are optional support for VPP development and do not replace a required commercial license unless expressly agreed in writing.
