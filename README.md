@@ -38,9 +38,9 @@ VPP Viewer
  ↓
 Verify signature, publisher, and resource hashes
  ↓
-Load resources
+Load dom.bin, style.bin, code.bin
  ↓
-Run the page's JavaScript
+Run the page's JavaScript (QuickJS compiles the source in memory)
  ↓
 Display page
  ↓
@@ -472,6 +472,12 @@ Early and experimental. Works today, on Windows:
 Next: macOS and Linux, then Android and iOS ([docs/rust-port.md](docs/rust-port.md)). After that, the runtime half of the template specification (bindings, events, component scripts), storage, and assets.
 
 Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.
+
+## Contributing
+
+Contributions are welcome: bug reports, examples, documentation, and code. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [ARCHITECTURE.md](ARCHITECTURE.md). Contributors sign the [CLA](CLA.md) once, on their first pull request.
+
+**AI-assisted contributions ("vibe coding") are welcome too**, held to the same bar as any other change: small, tested, readable, and safe. [AGENTS.md](AGENTS.md) holds the rules that AI coding tools (Claude Code, Copilot, Cursor, Codex, and others) read automatically: what to read first, what to ask a human before doing, and what never to do. Each pull request says which parts were written with AI, and a person reviews every line before it is merged ([CONTRIBUTING.md](CONTRIBUTING.md), section 10).
 
 ## License
 
