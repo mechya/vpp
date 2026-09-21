@@ -19,6 +19,18 @@ allow = [
     "Zlib",
     "Unicode-3.0",
     "CC0-1.0",
+    # Permissive, needs no notice in binaries (decided 2026-09-21): clipboard-win
+    # and error-code, the Windows clipboard under arboard.
+    "BSL-1.0",
+    # Permissive licence for data (decided 2026-09-21): Mozilla's root
+    # certificate list in webpki-root-certs, used by rustls-platform-verifier.
+    "CDLA-Permissive-2.0",
+    # Weak, file-level copyleft. Allowed for unmodified dependencies only
+    # (decided 2026-09-21 for cssparser): using one unchanged needs only its
+    # notice in THIRD-PARTY-NOTICES.md. Changing its files would oblige VPP to
+    # publish those changes, so a pull request that patches an MPL crate needs
+    # the lead maintainer's approval.
+    "MPL-2.0",
 ]
 confidence-threshold = 0.9
 unused-allowed-license = "allow"

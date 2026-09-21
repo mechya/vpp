@@ -6,8 +6,7 @@ One file per binary format, each giving the byte layout of every version still s
 |---|---|---|
 | `.vpp` page package | 3 | [package.md](package.md) |
 | `.vppm` update manifest | 3 | [package.md](package.md): the package without its data section |
-| `dom.bin` | — | To be written when `vpp-dom` is ported |
-| `style.bin` | — | To be written when `vpp-style` is ported |
-| `code.bin` | — | To be written when `vpp-script` is ported |
+| `dom.bin` | 1 | [dom.md](dom.md) |
+| `style.bin` | 1 | [style.md](style.md) |
+| `code.bin` | 1 | [code.md](code.md) |
 
-Until a specification is written, the removed C++ implementation is the source of truth: `git show 1d1cd11:runtime/src/binary.cpp` for `dom.bin` and `style.bin`, and `docs/reference/compiler.md` for what they contain.

@@ -10,6 +10,7 @@ publish.workspace = true
 
 [dependencies]
 vpp-format.workspace = true
+vpp-template.workspace = true
 vpp-dom.workspace = true
 vpp-style.workspace = true
 vpp-layout.workspace = true
@@ -17,6 +18,7 @@ vpp-paint.workspace = true
 vpp-script.workspace = true
 vpp-updater.workspace = true
 vpp-platform.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

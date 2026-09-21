@@ -101,7 +101,7 @@ VPP aims to provide:
 - Navigation between pages, with back and forward
 - HTML and CSS based interfaces
 - Existing JavaScript development workflow
-- JavaScript compilation into binary form
+- Scripts checked at build time and shipped as source, never as bytecode, so a page cannot attack the viewer's engine
 - `.vpp` page packaging
 - Offline execution of every page already visited
 - Signed applications

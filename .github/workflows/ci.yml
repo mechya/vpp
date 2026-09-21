@@ -70,8 +70,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       # Keep in step with rust-version in Cargo.toml.
-      - run: rustup toolchain install 1.85 --profile minimal
-      - run: cargo +1.85 check --workspace --all-targets
+      - run: rustup toolchain install 1.87 --profile minimal
+      - run: cargo +1.87 check --workspace --all-targets
 
   deny:
     name: Licences and advisories

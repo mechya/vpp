@@ -12,19 +12,57 @@
 //!
 //! # Status
 //!
-//! Windows comes first, with the desktop viewer (`docs/rust-port.md` §8, step 7); `windows.rs` is its home. `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders for later. The removed C++ viewer kept its folders in `prefDir` (`git show 1d1cd11:viewer/src/main.cpp`).
+//! Windows works: the data folder, the system fonts, and reading the clipboard (`windows.rs`). `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders that find nothing yet. The removed C++ viewer kept its folders in `prefDir` (`git show 1d1cd11:viewer/src/main.cpp`).
+
+use std::path::PathBuf;
 
 #[cfg(target_os = "windows")]
 mod windows;
+#[cfg(target_os = "windows")]
+use windows as os;
 
 #[cfg(target_os = "macos")]
 mod macos;
+#[cfg(target_os = "macos")]
+use macos as os;
 
 #[cfg(target_os = "linux")]
 mod linux;
+#[cfg(target_os = "linux")]
+use linux as os;
 
 #[cfg(target_os = "android")]
 mod android;
+#[cfg(target_os = "android")]
+use android as os;
 
 #[cfg(target_os = "ios")]
 mod ios;
+#[cfg(target_os = "ios")]
+use ios as os;
+
+/// A font family's files: the regular face, and the bold face if there is one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FontFiles {
+    /// The regular face.
+    pub regular: PathBuf,
+    /// The bold face.
+    pub bold: Option<PathBuf>,
+}
+
+/// The viewer's own data folder, for pinned publisher keys and installed
+/// sites. It may not exist yet. `None` if the system does not say where.
+pub fn data_dir() -> Option<PathBuf> {
+    os::data_dir()
+}
+
+/// The text on the clipboard, if there is any.
+pub fn clipboard_text() -> Option<String> {
+    os::clipboard_text()
+}
+
+/// The system's fonts for page text, best first. Some may be missing; the
+/// viewer uses the first that loads.
+pub fn font_candidates() -> Vec<FontFiles> {
+    os::font_candidates()
+}

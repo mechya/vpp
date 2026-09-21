@@ -9,6 +9,9 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+rustls.workspace = true
+thiserror.workspace = true
+ureq.workspace = true
 vpp-format.workspace = true
 
 [lints]

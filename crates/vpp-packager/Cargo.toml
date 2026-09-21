@@ -13,6 +13,8 @@ name = "vpppack"
 path = "src/main.rs"
 
 [dependencies]
+anyhow.workspace = true
+clap.workspace = true
 vpp-format.workspace = true
 
 [lints]

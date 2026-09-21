@@ -12,7 +12,16 @@ Holds a page as an arena of nodes linked by generational ids, parses HTML into i
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `runtime/src/dom.cpp`, `runtime/src/html.cpp`, and the `dom.bin` half of `runtime/src/binary.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/dom.cpp`, `html.cpp`, and the `dom.bin` half of `binary.cpp` (`git show 1d1cd11:<path>`).
+
+| File | Holds |
+|---|---|
+| `document.rs` | `Document`: the arena of nodes and the root. Start here. |
+| `node.rs` | `Node`, `NodeId`, `NodeData`, `Element`, `Attribute` |
+| `tree.rs` | Every operation that changes the tree: append, insert, detach, remove, copy, traverse |
+| `query.rs` | Finding nodes and reading text |
+| `parse.rs` | HTML to a `Document`, through `html5ever` |
+| `binary.rs` | `dom.bin` (`docs/formats/dom.md`) |
 
 ## Test it on its own
 

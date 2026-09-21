@@ -9,7 +9,16 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+resvg.workspace = true
+vpp-dom.workspace = true
+vpp-style.workspace = true
+swash.workspace = true
+thiserror.workspace = true
 vpp-layout.workspace = true
+
+[dev-dependencies]
+vpp-format.workspace = true
+vpp-template.workspace = true
 
 [lints]
 workspace = true

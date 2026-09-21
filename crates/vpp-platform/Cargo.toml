@@ -10,5 +10,9 @@ publish.workspace = true
 
 [dependencies]
 
+# Windows services outside std.
+[target.'cfg(target_os = "windows")'.dependencies]
+arboard.workspace = true
+
 [lints]
 workspace = true

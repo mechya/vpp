@@ -1,6 +1,6 @@
 # VPP Examples — Viewer Package Platform
 
-> The commands below use the VPP tools (`vppc`, `vpppack`, `vpp-viewer`). They run again once the Rust port reaches them; see `docs/rust-port.md` §8.
+> The commands below use the VPP tools. `vppc` and `vpppack` work again (build them with `cargo build -p vpp-compiler -p vpp-packager`; they are in `target/debug/`). `vpp-viewer` returns with the Windows viewer; see `docs/rust-port.md` §8.
 
 **VPP Examples** contains reference and test sites for **VPP — Viewer Package Platform**.
 
@@ -55,7 +55,7 @@ Tests:
 - includes
 - components with literal properties, boolean shorthand, and scoped CSS
 - CSS: selectors, cascade, flexbox, borders, max-width centring
-- JavaScript from source and from bytecode; DOM events and mutation; the `VPP.window` API
+- JavaScript shipped as source in `code.bin`; DOM events and mutation; the `VPP.window` API
 - navigation between page packages, locally and over HTTP, with history
 - identical rendering in development mode and from compiled packages
 

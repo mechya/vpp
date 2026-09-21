@@ -32,12 +32,12 @@ examples\hello-world\dist\
 
 One resource per source file means two pages that use the same stylesheet or script produce identical resources, and the packager and viewer share them by hash.
 
-`vppc pages\home.html` compiles a single page into the same layout. `vppc app.js` still compiles one script to bytecode.
+`vppc pages\home.html` compiles a single page into the same layout. `vppc app.js` checks one script and writes it as `code.bin` next to it, or to `-o <file>`.
 
 Options:
 
 ```text
--g   keep debug info in bytecode (line numbers in stack traces)
+-g   accepted and ignored in the Rust port (scripts ship as source, which keeps line numbers)
 ```
 
 ### Templates
@@ -55,18 +55,25 @@ The compiler implements the build-time half of `docs/template-syntax.md`:
 
 Not yet: expression properties, runtime bindings, events, conditionals, and component JavaScript. A `component.js` file produces a warning and is ignored. That is the runtime half of the specification and needs its own design first.
 
+### Changes in the Rust port
+
+- Ordinary element nesting no longer counts towards the 32-level include and component limit.
+- An include at the top level of an included file is expanded.
+- `data:` URLs and `#fragment` references are left as written.
+- Scripts ship as JavaScript source in a `code.bin` container, not as bytecode (`docs/design/0001-code-bin.md`). `vppc` checks each for syntax errors and reports them as `file:line:col`. `-g` is accepted and ignored.
+
 ## The binary resources
 
 - **dom.bin** holds the element tree with tags, attributes, and text. `<script>`, `<style>`, and `<link>` elements are removed, since their content lives in the other resources, and runs of whitespace collapse to one space.
 - **style/NN-name.bin** holds one stylesheet already parsed: selectors with their specificity and the declarations. Selector matching still happens at run time, because scripts can change the DOM.
-- **code/NN-name.bin** is QuickJS bytecode for one script. The source text and, unless `-g` is given, debug information are stripped. Property and function names the engine needs at run time remain as strings.
+- **code/NN-name.bin** holds one script. The C++ compiler wrote QuickJS bytecode here; the Rust compiler writes the JavaScript source in a container (`docs/formats/code.md`).
 
 Every decoder validates lengths and counts, so a truncated or corrupt file produces an error page rather than a crash.
 
 ## What compilation does and does not guarantee
 
-- A distributed page does not contain its source code.
-- Reading a program back requires disassembling the bytecode. That raises the effort well above reading minified JavaScript, but it is not encryption, and a determined person can do it.
+- A distributed page's JavaScript is readable, as on the web. (The C++ tools shipped bytecode instead, which only raised the effort of reading it; it was never encryption.)
+- Every script parses: syntax errors stop the build.
 - Loading these resources is only safe from a trusted source. That is what package signing provides.
 
 ## Planned

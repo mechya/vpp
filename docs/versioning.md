@@ -9,7 +9,7 @@ VPP has several things that change at different speeds. Each has its own version
 | Page / site content | SemVer, set by the publisher | `vpp.json` → manifest | Updater (rollback protection) |
 | `VPP.*` JavaScript API | Integer API level | `vpp.json` `"apiLevel"` | Viewer, page scripts |
 | Template syntax | Covered by the compiler version | — | Compiler |
-| Minimum Rust version | e.g. `1.85` | `Cargo.toml` `rust-version`, checked in CI | Contributors |
+| Minimum Rust version | e.g. `1.87` | `Cargo.toml` `rust-version`, checked in CI | Contributors |
 
 ## 1. Software versions
 
@@ -36,7 +36,7 @@ The publisher sets a SemVer version in `vpp.json`. The updater refuses any versi
 * **Readers accept a range, writers write one version.** The viewer reads from the oldest supported to the current version, and the tools always write the current one. Dropping support for an old version is a breaking change and is listed in `CHANGELOG.md`.
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
 * **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
-* **`code.bin` records which engine produced it**, e.g. `quickjs-ng 0.16`, because bytecode is tied to the engine build. On a mismatch the viewer refuses the page with a clear message rather than crashing inside the engine.
+* **`code.bin` holds JavaScript source, not bytecode** (`docs/design/0001-code-bin.md`), so pages do not depend on the viewer's engine version.
 * **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 4. JavaScript API level
@@ -54,7 +54,7 @@ Templates never reach the viewer, since the compiler dissolves them, so they nee
 
 Two different settings:
 
-* **Minimum supported Rust** is `rust-version` in `Cargo.toml` (currently 1.85, the first release with edition 2024). CI builds with it on every pull request. It is raised only in a minor release, with a changelog entry, and never to a Rust release less than about six months old, so contributors on distribution-packaged Rust are not locked out.
+* **Minimum supported Rust** is `rust-version` in `Cargo.toml` (currently 1.87, raised from 1.85 for `rquickjs` 0.14; see `docs/design/0001-code-bin.md`). CI builds with it on every pull request. It is raised only in a minor release, with a changelog entry, and never to a Rust release less than about six months old, so contributors on distribution-packaged Rust are not locked out.
 * **Development toolchain** is pinned in `rust-toolchain.toml`, so everyone formats and lints with the same Rust. It can be updated in any pull request, as long as the minimum still builds.
 
 ## 7. Changelog

@@ -51,6 +51,17 @@ Inherited: `color`, `font-size`, `font-weight`, `text-align`.
 
 Not yet: raster images, strokes and other SVG features, scrolling, `position`, floats, grid, flex wrapping, line-height, non-ASCII text.
 
+## Changes in the Rust port
+
+Block and flex layout run through `taffy`, which follows the CSS specifications where the C++ engine approximated them:
+
+- Vertical margins also collapse between a parent and its first or last child, not only between siblings.
+- Flex items shrink by the flexbox algorithm when they do not fit.
+- Text directly inside a flex container is laid out as an item; the C++ engine dropped it.
+- Text is measured and drawn from each character's advance width, with no kerning yet.
+- Inline `<svg>` is drawn by `resvg`: all of SVG, not only filled `<path>` elements. Shapes with no `fill`, or `fill="currentColor"`, still take the CSS `color`.
+- Borders are drawn as rings, so rounded borders keep an even width.
+
 ## Security
 
 Applications execute inside an isolated runtime. One application does not gain access to another VPP application, unrestricted filesystem locations, process memory, or protected operating-system resources. Runtime permissions are explicitly controlled by VPP.

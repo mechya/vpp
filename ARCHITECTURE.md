@@ -45,10 +45,10 @@ Start here. This page is the map of VPP: what happens to a page from source to s
 | `vpp-format` | Byte reader and writer, every format version number, `.vpp` package, `.vppm` manifest, `code.bin` container, `vpp.json`, keys, signatures, hashes | — |
 | `vpp-dom` | Arena DOM, HTML parsing, `dom.bin` | `vpp-format` |
 | `vpp-style` | CSS parsing, `style.bin`, selectors, cascade, computed style | `vpp-format`, `vpp-dom` |
-| `vpp-layout` | Block, flex, grid (via `taffy`), inline formatting, line breaking | `vpp-dom`, `vpp-style` |
-| `vpp-paint` | Display list, rasterising, text, SVG, canvas | `vpp-layout` |
+| `vpp-layout` | Block and flex (via `taffy`), inline formatting, line breaking; asks for text sizes through `TextMeasure` | `vpp-dom`, `vpp-style` |
+| `vpp-paint` | Fonts (`swash`) and the real `TextMeasure`; display list, rasterising, text, SVG, canvas | `vpp-layout` |
 | `vpp-script` | `ScriptEngine` trait, QuickJS backend, DOM and `VPP.*` bindings | `vpp-dom` |
-| `vpp-template` | Layouts, includes, slots, components | `vpp-dom` |
+| `vpp-template` | Layouts, includes, slots, components, scoped component CSS | `vpp-format`, `vpp-dom`, `vpp-style` |
 | `vpp-updater` | Page store, publisher trust, manifest checks, downloads | `vpp-format` |
 | `vpp-compiler` | `vppc` binary | format, template, dom, style, script |
 | `vpp-packager` | `vpppack` binary | `vpp-format` |

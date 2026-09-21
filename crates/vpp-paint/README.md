@@ -12,7 +12,17 @@ Builds a display list from laid-out boxes and rasterises it into a pixel buffer 
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `runtime/src/paint.cpp`, `font.cpp`, `svg.cpp`, and `canvas.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, steps 5b and 5c). It replaces the C++ `runtime/src/paint.cpp`, `font.cpp`, `svg.cpp`, and `canvas.cpp` (`git show 1d1cd11:<path>`).
+
+| File | Holds |
+|---|---|
+| `raster.rs` | `render_page` and `rasterize`: drawing with `tiny-skia`. Start here. |
+| `display_list.rs` | `DisplayItem`: what a page draws, in order |
+| `font.rs` | `Font`, `FontSet`: loading fonts and measuring text |
+| `text.rs` | Drawing text from glyph outlines |
+| `svg.rs` | Inline `<svg>` through `resvg` |
+
+`tests/screenshots.rs` renders every example page with DejaVu Sans (`tests/fixtures/fonts/`) and compares it with the approved images in `tests/screenshots/`; see `CONTRIBUTING.md` for updating them.
 
 ## Test it on its own
 

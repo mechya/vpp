@@ -9,7 +9,11 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+serde_json.workspace = true
+thiserror.workspace = true
 vpp-dom.workspace = true
+vpp-format.workspace = true
+vpp-style.workspace = true
 
 [lints]
 workspace = true

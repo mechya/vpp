@@ -12,7 +12,9 @@ Compiles a page and its layouts, components, CSS, and JavaScript into `dom.bin`,
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `compiler/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `compiler/src/main.cpp`, with the same command line. Pages and stylesheets compile byte for byte as the C++ tool did. Scripts are checked for syntax with QuickJS and shipped as source in `code.bin` (`docs/design/0001-code-bin.md`); `-g` is accepted and ignored.
+
+`cli.rs` holds the command line and `compile.rs` the compiling.
 
 ## Run it
 

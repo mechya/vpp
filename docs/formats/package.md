@@ -1,7 +1,7 @@
 # `.vpp` page package and `.vppm` manifest
 
 **Current version:** 3
-**Source of truth until `vpp-format` is ported:** the C++ implementation removed after commit `1d1cd11`: `git show 1d1cd11:runtime/src/package.cpp` and `git show 1d1cd11:runtime/include/vpp/bytes.h`.
+**Implementation:** `crates/vpp-format/src/package.rs`. The frozen fixtures in `tests/fixtures/v3/` pin these bytes: `crates/vpp-format/tests/fixtures_v3.rs` fails if the layout changes. The format came from the C++ implementation removed after commit `1d1cd11` (`git show 1d1cd11:runtime/src/package.cpp`).
 
 A `.vpp` file is one page: its manifest, the table of its resources, the publisher's key and signature, and the resources themselves. A `.vppm` file is the same file cut off before the resource data, so the updater can check for changes with a few hundred bytes.
 
@@ -12,7 +12,7 @@ All integers are **little-endian**.
 | Name | Encoding |
 |---|---|
 | `u16`, `u32`, `u64` | unsigned integer, 2, 4, or 8 bytes |
-| `str` | `u32` length, then that many bytes. UTF-8 text, or raw bytes for keys and signatures. |
+| `str` | `u32` length, then that many bytes. UTF-8 text, or raw bytes for keys and signatures. Readers refuse text fields that are not valid UTF-8; the C++ reader did not check. |
 | `bytes[n]` | exactly `n` raw bytes |
 
 Decoder limits: a `str` longer than 16 MiB (16 × 1024 × 1024 bytes), or a count above 1,048,576 (2²⁰), is an error. Every read checks that enough bytes remain; running past the end is an error, never a crash.
@@ -41,7 +41,7 @@ offset  field                   encoding        notes
         data                    bytes           the resources, back to back
 ```
 
-* **Resource order.** The C++ packager writes resources sorted by name (byte order), and assigns offsets in that order with no gaps.
+* **Resource order.** Writers store resources sorted by name (byte order), and assign offsets in that order with no gaps, so the same inputs always give the same bytes.
 * **Resource names.** For example `dom.bin`, `style/00-global.bin`, `code/01-home.bin`. The compiler's numbering gives the load order.
 * **Signed region.** Everything from the magic up to the end of the resource table. The signature is Ed25519 over exactly those bytes. Because the table holds every resource's hash, the signature covers the data too: changing any byte either breaks a hash or breaks the signature.
 * **Key and signature.** Both present, and exactly 32 and 64 bytes, means signed. Both empty means unsigned. Anything else is a corrupt package.

@@ -12,7 +12,18 @@ Expands layouts, includes, slots, and components (`docs/template-syntax.md`) int
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `runtime/src/template.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/template.cpp` (`git show 1d1cd11:<path>`), and fixes three of its bugs, listed in `src/lib.rs`. The rules are in `docs/reference/compiler.md`, "Templates".
+
+| File | Holds |
+|---|---|
+| `page.rs` | `expand_page`, and collecting a page's stylesheets and scripts. Start here. |
+| `expander.rs` | Loading template files and walking a document to expand it |
+| `layout.rs`, `include.rs`, `component.rs` | One file per template element |
+| `slot.rs` | Moving content into slots |
+| `substitute.rs`, `props.rs` | `{{ }}` values |
+| `scoped_css.rs` | Scoping component styles |
+| `preprocess.rs` | Text fixes before HTML parsing |
+| `project.rs` | The project root, and resolving references safely inside it |
 
 ## Test it on its own
 

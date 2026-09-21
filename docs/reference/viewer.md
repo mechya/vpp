@@ -117,7 +117,7 @@ A site shapes the shell from the `window` object in its `vpp.json`:
 - `theme` colours the bar; button and text colours adapt to it.
 - `addressBar: "hidden"` removes the address field but keeps the buttons.
 - `titleBar: false` hides the whole bar. The top strip of the page then drags the window, and scripts can call `VPP.window.minimize()`, `maximize()`, and `close()` to draw their own buttons.
-- `cornerRadius` rounds the window's corners; the corners are transparent, so the desktop shows through. Not applied while maximized.
+- `cornerRadius` rounds the window's corners; the corners are transparent, so the desktop shows through. Not applied while maximized. *(Rust viewer: any value above 0 asks Windows 11 to round the corners at the system's own radius; Windows 10 keeps them square.)*
 - `width` and `height` set the initial window size in CSS pixels. `"height": "auto"` makes the window wrap the page and follow it when the content or the page changes. An automatic height turns resizing off unless `resizable` says otherwise.
 
 Pages can draw their own icons with inline `<svg>` elements: the engine fills every `<path>` in them, so an icon file such as one from Bootstrap Icons can be pasted in with `<vpp-include src="/assets/icons/x-lg.svg" />` and coloured through CSS `color`. See `examples/app-window`.
@@ -137,7 +137,8 @@ Given a URL, the viewer installs or updates the application into its local store
 - HTML becomes VPP's own DOM, which is styled, laid out, and painted into a CPU pixel buffer.
 - CSS comes from linked files, `<style>` blocks, and `style=""` attributes, in that cascade order. `docs/reference/runtime.md` lists the supported properties.
 - Layout supports block flow with collapsing margins, inline text with wrapping and inline styling, inline-blocks, widths, max-width with auto margins, padding, borders, text-align, and flexbox rows and columns.
-- Scripts see a small DOM API: `document.getElementById`, `addEventListener`, `textContent`, `id`, `tagName`, plus `console.log` and `VPP.window.popup` / `VPP.window.close`. Changing `textContent` re-runs layout.
+- Scripts see a small DOM API: `document.getElementById`, `addEventListener`, `textContent`, `id`, `tagName`, plus `console.log` and `VPP.window.popup` / `close` / `minimize` / `maximize`. Clicks bubble from the clicked element to its ancestors, and `event.target` is the clicked element. Changing `textContent` re-runs layout.
+- Each page's scripts may use up to 256 MiB of memory, and each script or event up to 5 seconds; past that the script is stopped and the error logged. *(Rust viewer; the C++ viewer had no limits.)*
 - Drag the top strip to move the frameless window. `Esc` closes the popup, or the viewer.
 - Layout runs in CSS pixels and paint applies the display scale, so the page looks the same size on a 100% and a 150% display.
 

@@ -9,6 +9,9 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+html5ever.workspace = true
+slotmap.workspace = true
+thiserror.workspace = true
 vpp-format.workspace = true
 
 [lints]

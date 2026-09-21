@@ -12,7 +12,20 @@ Turns styled elements into positioned boxes. Block, flex, and grid come from `ta
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `runtime/src/layout.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 5b). It replaces the C++ `runtime/src/layout.cpp` (`git show 1d1cd11:<path>`). Differences are listed in `docs/reference/runtime.md`.
+
+| File | Holds |
+|---|---|
+| `document.rs` | `layout_document`. Start here. |
+| `layouter.rs` | Building the `taffy` tree, running it, reading the result back |
+| `taffy_style.rs` | A computed style in `taffy`'s terms |
+| `inline.rs` | Collecting inline content, and laying it out in lines |
+| `line_break.rs` | Filling and aligning lines |
+| `tree.rs` | `LayoutBox`, `Line`, `Fragment`: the result |
+| `measure.rs` | `TextMeasure`, and `FixedMeasure` for tests |
+| `geometry.rs` | `Rect` |
+
+`tests/layout.rs` checks positions worked out by hand with `FixedMeasure`, and lays out every example page.
 
 ## Test it on its own
 

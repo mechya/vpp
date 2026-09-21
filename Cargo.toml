@@ -9,7 +9,7 @@ members = ["crates/*"]
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.87"
 license-file = "LICENSE.md"
 repository = "https://github.com/mechya/vpp"
 # VPP crates are never published to crates.io (docs/rust-port.md §6.1).
@@ -28,6 +28,39 @@ vpp-script = { path = "crates/vpp-script" }
 vpp-updater = { path = "crates/vpp-updater" }
 vpp-platform = { path = "crates/vpp-platform" }
 vpp-viewer = { path = "crates/vpp-viewer" }
+
+# Third-party crates. Each one is justified in the pull request that adds it and
+# listed in THIRD-PARTY-NOTICES.md.
+anyhow = "1"
+# The clipboard, for pasting into the address field. Text only: no image support.
+arboard = { version = "3", default-features = false }
+clap = { version = "4", features = ["derive"] }
+cssparser = "0.38"
+ed25519-dalek = "3"
+getrandom = "0.4"
+html5ever = "0.40"
+resvg = { version = "0.48", default-features = false }
+rquickjs = "0.14"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+sha2 = "0.11"
+taffy = { version = "0.14", default-features = false, features = ["std", "taffy_tree", "block_layout", "flexbox", "content_size"] }
+slotmap = "1"
+# Presents the viewer's CPU-drawn pixels in a window, on every platform winit supports.
+softbuffer = "0.4"
+swash = "0.2"
+thiserror = "2"
+# Windows, input, and the event loop on Windows, macOS, Linux, Android, and iOS.
+# 0.31 is still in beta. Without "wayland-csd-adwaita", the title bar winit
+# draws itself on Linux Wayland: VPP draws its own shell, and that feature
+# brings in an unmaintained font parser (RUSTSEC-2026-0192).
+winit = { version = "0.30", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen"] }
+# HTTPS with rustls and ring, verifying certificates against the operating
+# system's own store (as the C++ WinHTTP client did), not a bundled root list.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+# "rustls-no-provider" is marked unstable by ureq, so ureq is pinned to 3.4.x;
+# check it again when raising this.
+ureq = { version = "~3.4", default-features = false, features = ["rustls-no-provider", "platform-verifier"] }
 
 # Every crate opts in with `[lints] workspace = true`.
 [workspace.lints.rust]

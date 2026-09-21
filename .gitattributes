@@ -1,0 +1,3 @@
+# Fixtures are frozen bytes (tests/fixtures/README.md): never convert line endings
+# or diff them as text.
+tests/fixtures/** binary

@@ -27,6 +27,8 @@ cargo run -p vpp-desktop         # run the desktop viewer
 
 CI runs `fmt`, `clippy`, and `test` on Windows (the current focus; macOS and Linux join when those platforms start), builds with the minimum supported Rust (`rust-version` in `Cargo.toml`), and checks licences and advisories with [cargo-deny](https://github.com/EmbarkStudios/cargo-deny). To run that last check locally: `cargo install --locked cargo-deny`, then `cargo deny check`.
 
+**Screenshot tests** in `crates/vpp-paint/tests/screenshots.rs` render every example page and compare it with the images in `crates/vpp-paint/tests/screenshots/`. After an intended rendering change, run `VPP_UPDATE_SCREENSHOTS=1 cargo test -p vpp-paint --test screenshots`, look at every changed image, and commit them with the change. A failing run saves the new rendering in `target/screenshots/`.
+
 **During the port**, the specification is written down: byte layouts in `docs/formats/`, and how each tool behaved in `docs/reference/`. The C++ implementation they came from was removed after commit `1d1cd11`; read any file of it with `git show 1d1cd11:<path>`, for example `git show 1d1cd11:runtime/src/layout.cpp`.
 
 ## 3. Where to start
@@ -84,7 +86,7 @@ Copy `docs/design/0000-template.md` to `docs/design/NNNN-short-title.md` and ope
 
 A new dependency needs:
 
-* a permissive licence (MIT, Apache 2.0, zlib, BSD, ISC, or similar); `deny.toml` holds the list and CI enforces it
+* a permissive licence (MIT, Apache 2.0, zlib, BSD, ISC, or similar); `deny.toml` holds the list and CI enforces it. MPL-2.0 is also allowed for a dependency used unmodified, such as `cssparser`; a change that patches an MPL crate's own files needs the lead maintainer's approval
 * active maintenance
 * a reason in the pull request description: what it replaces, and why VPP should not write it
 

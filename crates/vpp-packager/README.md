@@ -12,7 +12,14 @@ Creates publisher keys, and hashes, signs, and publishes compiled pages as `.vpp
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `packager/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `packager/src/main.cpp`, with the same command line and output.
+
+| File | Holds |
+|---|---|
+| `cli.rs` | The command line |
+| `publish.rs` | Packaging a site, and `--publish`. Start here. |
+| `keygen.rs` | `vpppack keygen` |
+| `inspect.rs` | `vpppack --inspect` |
 
 ## Run it
 

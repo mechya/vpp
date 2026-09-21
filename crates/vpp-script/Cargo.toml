@@ -1,6 +1,6 @@
 [package]
 name = "vpp-script"
-description = "Runs a page's compiled scripts through the ScriptEngine trait, with rquickjs as the engine, and exposes the DOM, console, and the VPP.* APIs to them."
+description = "Checks and runs a page's JavaScript with QuickJS (through rquickjs), and exposes the DOM, console, and the VPP.* APIs to it."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,7 +9,22 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+rquickjs.workspace = true
+thiserror.workspace = true
 vpp-dom.workspace = true
+vpp-format.workspace = true
 
-[lints]
-workspace = true
+[dev-dependencies]
+vpp-template.workspace = true
+
+# The workspace forbids unsafe code. This crate may use it at the JavaScript
+# engine boundary only (docs/rust-port.md §7.7): "deny" here, allowed on the
+# exact function that needs it, with a // SAFETY: comment on each use. Keep the
+# other lints in step with [workspace.lints] in the root Cargo.toml.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"

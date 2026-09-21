@@ -67,6 +67,13 @@ If the manifest cannot be fetched at all and the page is installed, the installe
 
 Every file is written to a temporary name and renamed into place, and a page's manifest is replaced last. An interrupted download leaves the previous version intact and runnable. A resource used by several pages is downloaded once; a page that shares everything with an installed page downloads only its own `dom.bin`.
 
+## Changes in the Rust port
+
+- **Store folder names** are made unique for every site id and page name: lower-case letters, digits, `-`, and `.` are kept, and every other byte is written as `_` and two hex digits. The C++ updater turned them all into `_`, so different ids could share a folder, and an id of `..` could leave the store.
+- **The store and trust folders** are chosen by the viewer and passed to the updater; publisher trust (`trust/`) now lives in the updater library instead of the viewer.
+- **A damaged trust record** is an error, never silently replaced by a new pin.
+- **Responses** are limited to 256 MiB.
+
 ## Networking
 
 The C++ updater used WinHTTP with the system proxy settings and short timeouts, so an unreachable server failed fast and the installed copy took over. The Rust port uses `ureq` with `rustls` (`docs/rust-port.md` §3) and keeps the short timeouts.

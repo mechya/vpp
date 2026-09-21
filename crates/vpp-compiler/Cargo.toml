@@ -13,6 +13,8 @@ name = "vppc"
 path = "src/main.rs"
 
 [dependencies]
+anyhow.workspace = true
+clap.workspace = true
 vpp-format.workspace = true
 vpp-template.workspace = true
 vpp-dom.workspace = true

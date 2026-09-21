@@ -36,7 +36,7 @@ Do not do any of the following on your own. Explain what you want to do and why,
 * Never commit secrets, keys, certificates, tokens, or personal data.
 * Never add hidden or direction-changing Unicode characters, or obfuscated code such as encoded strings or data blobs that are decoded and run.
 * Never weaken a security check to make something work, including "temporarily".
-* Never copy code from another project unless its licence is on the allow list in `deny.toml`, and say where it came from.
+* Never copy code from another project unless its licence is on the allow list in `deny.toml` (MPL-2.0 there covers unmodified dependencies only, not copied code), and say where it came from.
 * Never claim that tests pass unless you ran them and they did.
 
 ## 4. How to write the change

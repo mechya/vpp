@@ -1,22 +1,75 @@
 //! `vpppack`, the VPP packager.
 //!
-//! Creates publisher keys, and hashes, signs, and publishes compiled pages as `.vpp` packages, `.vppm` manifests, and a shared `res/` folder.
+//! Creates publisher keys, and hashes, signs, and publishes compiled pages as
+//! `.vpp` packages, `.vppm` manifests, and a shared `res/` folder. Its
+//! behaviour and output follow the C++ tool (`docs/reference/packager.md`).
 //!
 //! # Where it sits
 //!
-//! The second development step. Its output is what a static server hosts.
+//! The second development step, after `vppc` has compiled a site into `dist/`.
+//! Its output is what a static server hosts.
 //!
 //! # Not in this crate
 //!
-//! Compiling pages (`vpp-compiler`).
+//! Compiling pages (`vpp-compiler`), and the package format itself (`vpp-format`).
 //!
-//! # Status
+//! # Where to start reading
 //!
-//! Not implemented yet. The removed C++ implementation was `packager/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+//! `cli.rs` for the command line, then `publish.rs` for packaging a site.
 
+mod cli;
+mod inspect;
+mod keygen;
+mod publish;
+#[cfg(test)]
+mod test_dir;
+
+use std::io;
 use std::process::ExitCode;
 
+use clap::Parser;
+
+use crate::cli::{Cli, Command};
+use crate::publish::PackOptions;
+
 fn main() -> ExitCode {
-    eprintln!("vpppack: not implemented yet; the Rust port is in progress (docs/rust-port.md)");
-    ExitCode::FAILURE
+    let command = match Cli::parse().command() {
+        Ok(command) => command,
+        Err(message) => {
+            eprintln!("vpppack: {message}\n\nRun vpppack --help for usage.");
+            return ExitCode::from(2);
+        }
+    };
+
+    let mut out = io::stdout().lock();
+    let result = match &command {
+        Command::Keygen { name } => keygen::keygen(name, &mut out),
+        Command::Pack {
+            project,
+            key,
+            output,
+            publish,
+        } => publish::pack(
+            &PackOptions {
+                project,
+                key: key.as_deref(),
+                output: output.as_deref(),
+                publish: *publish,
+            },
+            &mut out,
+        ),
+        Command::Inspect { file } => match inspect::inspect(file, &mut out) {
+            Ok(true) => Ok(()),
+            Ok(false) => Err(anyhow::anyhow!("verification failed")),
+            Err(e) => Err(e),
+        },
+    };
+
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("vpppack: {error:#}");
+            ExitCode::FAILURE
+        }
+    }
 }

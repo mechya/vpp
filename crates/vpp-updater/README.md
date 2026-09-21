@@ -12,7 +12,17 @@ Keeps visited pages on disk, pins each site's publisher key on first use, checks
 
 ## Status
 
-Not implemented yet. The removed C++ implementation was `updater/src/http.cpp`, `updater/src/updater.cpp`, and the publisher-trust section of `viewer/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Implemented (`docs/rust-port.md` §8, step 4). It replaces the C++ `updater/src/updater.cpp`, `http.cpp`, and the publisher-trust part of `viewer/src/main.cpp` (`git show 1d1cd11:<path>`). Differences are listed in `docs/reference/updater.md`.
+
+| File | Holds |
+|---|---|
+| `sync.rs` | `Store::sync`: install and update a page. Start here. |
+| `store.rs` | The layout on disk, safe folder names, atomic writes |
+| `trust.rs` | Pinned publisher keys |
+| `version.rs` | Version ordering, for rollback protection |
+| `fetch.rs`, `http.rs` | The `Fetch` trait and the real HTTPS client |
+
+`tests/static_server.rs` runs the updater against a real HTTP server on localhost.
 
 ## Test it on its own
 

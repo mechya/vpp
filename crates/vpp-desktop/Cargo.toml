@@ -15,6 +15,8 @@ path = "src/main.rs"
 [dependencies]
 vpp-viewer.workspace = true
 vpp-platform.workspace = true
+softbuffer.workspace = true
+winit.workspace = true
 
 [lints]
 workspace = true

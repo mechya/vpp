@@ -33,12 +33,13 @@ Sections 5 to 7 were drafts of `ARCHITECTURE.md`, `docs/versioning.md`, `CONTRIB
 | HTML parsing | `html5ever` | lexbor | Spec-compliant parser from Servo. Parsing only: the DOM stays VPP's. |
 | CSS tokenising | `cssparser` | the tokeniser in `css.cpp` | Servo's CSS3 tokeniser. Property parsing, selector matching, and the cascade stay VPP's own (`vpp-style`). |
 | Box layout | `taffy` | block and flex parts of `layout.cpp` | Block, flexbox, and CSS grid, maintained and used by Bevy, Dioxus, and Zed. VPP adds inline formatting and line breaking on top. |
-| JavaScript | `rquickjs`, behind a `ScriptEngine` trait | quickjs-ng | A mature ES2023 engine that stays close to what VPP uses today. The trait keeps a later move to `boa` (pure Rust) possible without touching the DOM bindings. |
+| JavaScript | `rquickjs`, behind a `ScriptEngine` trait | quickjs-ng | Bundles quickjs-ng 0.16.2, the same engine the C++ tools used. The trait keeps a later move to `boa` (pure Rust) possible without touching the DOM bindings. |
 | DOM storage | Arena with generational ids (`slotmap`) | pointer tree in `dom.cpp` | Parent, child, and sibling links are ids, not references. This avoids `Rc<RefCell<…>>`, makes JS handles plain integers, and turns stale handles into an error rather than a crash. |
 | Signatures | `ed25519-dalek` | orlp ed25519 | Audited RustCrypto-family crate. |
 | Hashing | `sha2` | `sha256.cpp` | Standard crate. |
+| DOM storage arena | `slotmap` | — | Generational keys, as the DOM row above describes. Zlib licence. |
 | Encryption (planned) | `chacha20poly1305` (XChaCha20-Poly1305) | nothing yet | For "encrypted application resources" once that is designed. Fast without AES hardware support, and nonce misuse is less likely with 192-bit nonces. |
-| HTTP | `ureq` with `rustls` | `http.cpp` | Small and blocking, with no async runtime. Update checks run on a worker thread. No OpenSSL dependency. |
+| HTTP | `ureq` with `rustls` (and `ring`), verifying certificates with `rustls-platform-verifier` | `http.cpp` | Small and blocking, with no async runtime. Update checks run on a worker thread. No OpenSSL dependency. Certificates are checked against the operating system's store, as WinHTTP did, not a bundled list. |
 | `vpp.json`, manifests | `serde` + `serde_json` | hand-written JSON reader in `package.cpp` | Nested objects such as `window` and future config without a custom parser. |
 | Command line | `clap` (derive) | hand-written argument parsing | Consistent `--help` across the tools. |
 | OS services on desktop | `directories` (data folders), `arboard` (clipboard) | `prefDir` and friends in `viewer/src/main.cpp` | Maintained, cross-platform, and small. Used only inside `vpp-platform` (§4.1). |
@@ -46,7 +47,7 @@ Sections 5 to 7 were drafts of `ARCHITECTURE.md`, `docs/versioning.md`, `CONTRIB
 | OS services on Apple platforms | `objc2` and its framework crates | nothing yet | Maintained bindings to Foundation, AppKit, and UIKit, used where `winit` does not already cover a service. |
 | Errors | `thiserror` in libraries, `anyhow` in binaries | `bool` + `std::string* error` | Typed errors that carry source locations, which the template spec requires for compiler errors. |
 
-Every crate listed is under MIT, Apache 2.0, zlib, or a similarly permissive licence. `cargo-deny` enforces this (§7.7).
+Every crate listed is under MIT, Apache 2.0, zlib, or a similarly permissive licence, except `cssparser`, which is MPL-2.0: allowed for unmodified dependencies since step 3 (`deny.toml`). `cargo-deny` enforces this (§7.7).
 
 # 4. Workspace layout
 
@@ -62,7 +63,7 @@ vpp/
 ├── CHANGELOG.md            user-visible changes per release (§6.7)
 ├── SECURITY.md             how to report a vulnerability privately
 ├── crates/
-│   ├── vpp-format/         byte reader/writer, format versions, package, manifest, code.bin, keys, signing, hashing
+│   ├── vpp-format/         byte reader/writer, format versions, package, manifest, keys, signing, hashing
 │   ├── vpp-template/       layouts, includes, slots, components → expanded HTML
 │   ├── vpp-dom/            arena DOM, HTML parsing into it, dom.bin
 │   ├── vpp-style/          CSS parsing, style.bin, selectors, cascade, computed style
@@ -213,33 +214,34 @@ This table is the checklist for the port. The tracking issue has one checkbox pe
 
 | Removed C++ file | Rust file(s) | Notes |
 |---|---|---|
-| `runtime/include/vpp/bytes.h` | `vpp-format/src/bytes.rs` | Reader and writer primitives. |
-| `runtime/src/binary.cpp` | `vpp-dom/src/binary.rs` (`dom.bin`), `vpp-style/src/binary.rs` (`style.bin`) | Each codec lives next to the type it encodes, so `vpp-format` never depends on the DOM or CSS. Both use `vpp-format`'s byte reader and version numbers. |
-| — | `vpp-format/src/code_bin.rs` | The `code.bin` container: engine id plus bytecode (§6.3). |
-| `runtime/src/package.cpp` | `vpp-format/src/package.rs`, `manifest.rs`, `site_config.rs` | `.vpp`, `.vppm`, and `vpp.json` (serde) split apart. |
-| `runtime/src/crypto.cpp` | `vpp-format/src/keys.rs`, `signature.rs`, `hex.rs` | |
-| `runtime/src/sha256.cpp` | `vpp-format/src/hash.rs` | A thin wrapper over `sha2` that defines the `ResourceHash` type. |
-| — | `vpp-format/src/version.rs` | All format version constants in one place (§6.3). |
-| `runtime/src/template.cpp` | `vpp-template/src/include.rs`, `layout.rs`, `slot.rs`, `component.rs`, `scoped_css.rs`, `error.rs` | One file per feature of `docs/template-syntax.md`. |
-| `runtime/src/dom.cpp` | `vpp-dom/src/node.rs`, `document.rs`, `tree.rs`, `query.rs` | `tree.rs` holds all arena operations: append, remove, traverse. |
-| `runtime/src/html.cpp` | `vpp-dom/src/parse.rs` | `html5ever` tree sink into the arena. |
-| `runtime/src/css.cpp` | `vpp-style/src/parse.rs`, `selector.rs`, `specificity.rs` | |
-| `runtime/src/style.cpp` | `vpp-style/src/cascade.rs`, `computed.rs`, `user_agent.rs`, `values/{color,length,edges,display,…}.rs` | Adding a CSS property touches one `values/` file and the property table (§7.6). |
-| `runtime/src/layout.cpp` | `vpp-layout/src/box_tree.rs`, `taffy_bridge.rs`, `inline.rs`, `line_break.rs`, `fragment.rs` | |
-| `runtime/src/paint.cpp` | `vpp-paint/src/display_list.rs`, `raster.rs` | The display list is the seam for a future GPU backend. |
-| `runtime/src/font.cpp` | `vpp-paint/src/text.rs`, `font_store.rs` | |
-| `runtime/src/svg.cpp` | `vpp-paint/src/svg.rs` | Glue to `resvg`. |
-| `runtime/src/canvas.cpp` | `vpp-paint/src/canvas.rs` | |
-| `runtime/src/script.cpp` | `vpp-script/src/engine.rs`, `quickjs.rs`, `bindings/{document,element,events,console,vpp_window}.rs` | One binding file per JS object, so a new `VPP.*` API is one new file. |
-| `updater/src/http.cpp` | `vpp-updater/src/http.rs` | |
-| `updater/src/updater.cpp` | `vpp-updater/src/store.rs`, `check.rs`, `download.rs` | |
-| `viewer/src/main.cpp` (publisher trust) | `vpp-updater/src/trust.rs` | Moves out of the viewer: security logic belongs in a tested library. |
-| `viewer/src/main.cpp` (`prefDir`, folders) | `vpp-platform/src/{windows,macos,linux,android,ios}.rs` | One file per OS behind one API (§4.1). |
-| `viewer/src/main.cpp` (the rest) | `vpp-viewer/src/lib.rs`, `app.rs`, `page_loader.rs`, `navigation.rs`, `render.rs`, `input.rs`, `popup.rs` | Follows the `// ---` sections already in the file. |
-| `viewer/src/main.cpp` (`main`, arguments) | `vpp-desktop/src/main.rs` | The desktop entry point; `vpp-android` and `vpp-ios` are new. |
-| `viewer/src/shell.cpp` | `vpp-viewer/src/shell.rs`, `shell/desktop.rs`, `shell/mobile.rs` | The two shells share navigation and address handling (§4.1). |
-| `compiler/src/main.cpp` | `vpp-compiler/src/main.rs`, `cli.rs`, `compile.rs` | `main.rs` only parses arguments and reports errors. |
-| `packager/src/main.cpp` | `vpp-packager/src/main.rs`, `cli.rs`, `publish.rs`, `keygen.rs` | |
+| `runtime/include/vpp/bytes.h` | `vpp-format/src/bytes.rs` | *Done.* Reader and writer primitives. |
+| `runtime/src/binary.cpp` | `vpp-dom/src/binary.rs` (`dom.bin`), `vpp-style/src/binary.rs` (`style.bin`) | *Done.* Each codec lives next to the type it encodes, so `vpp-format` never depends on the DOM or CSS. Both use `vpp-format`'s byte reader and version numbers. |
+| — | `vpp-format/src/code_bin.rs` | *Done.* The `code.bin` container: JavaScript source (§6.3, `docs/design/0001-code-bin.md`). |
+| `runtime/src/script.cpp` (`ScriptHost::compile`) | `vpp-script/src/syntax.rs` | *Done.* The compile step became a syntax check; source is shipped instead of bytecode. |
+| `runtime/src/package.cpp` | `vpp-format/src/package.rs`, `manifest.rs`, `site_config.rs` | *Done.* `.vpp` and `.vppm` in `package.rs`, the manifest fields in `manifest.rs`, `vpp.json` (serde) in `site_config.rs`. |
+| `runtime/src/crypto.cpp` | `vpp-format/src/keys.rs`, `signature.rs`, `hex.rs` | *Done.* |
+| `runtime/src/sha256.cpp` | `vpp-format/src/hash.rs` | *Done.* A thin wrapper over `sha2` that defines the `ResourceHash` type. |
+| — | `vpp-format/src/version.rs` | *Done.* All format version constants in one place (§6.3). |
+| `runtime/src/template.cpp` | `vpp-template/src/page.rs`, `expander.rs`, `layout.rs`, `include.rs`, `component.rs`, `slot.rs`, `substitute.rs`, `props.rs`, `scoped_css.rs`, `preprocess.rs`, `project.rs`, `error.rs` | *Done.* One file per feature of `docs/template-syntax.md`. Fixes three C++ bugs, listed in the crate's `lib.rs`. |
+| `runtime/src/dom.cpp` | `vpp-dom/src/node.rs`, `document.rs`, `tree.rs`, `query.rs` | *Done.* `tree.rs` holds all arena operations: append, remove, traverse. |
+| `runtime/src/html.cpp` | `vpp-dom/src/parse.rs` | *Done.* `html5ever` tree sink into the arena. The resource collection it also held moved to `vpp-template/src/page.rs`. |
+| `runtime/src/css.cpp` | `vpp-style/src/parse.rs`, `selector.rs`, `stylesheet.rs` | *Done.* Specificity is a method in `selector.rs`, too small for its own file. |
+| `runtime/src/style.cpp` | `vpp-style/src/cascade.rs`, `computed.rs`, `user_agent.rs`, `properties.rs`, `replaced.rs`, `values/{color,length,edges,number}.rs` | *Done* (step 5a). Adding a CSS property touches `properties.rs`, the property table, and a `values/` file if it needs a new kind of value (§7.6). |
+| `runtime/src/layout.cpp` | `vpp-layout/src/layouter.rs`, `taffy_style.rs`, `inline.rs`, `line_break.rs`, `tree.rs`, `document.rs`, `measure.rs` | *Done* (step 5b). Block and flex through `taffy`; inline formatting and line breaking are VPP's. |
+| `runtime/src/paint.cpp` | `vpp-paint/src/display_list.rs`, `raster.rs`, `text.rs` | *Done* (step 5c). The display list is the seam for a future GPU backend. |
+| `runtime/src/font.cpp` | `vpp-paint/src/font.rs`, `text.rs` | *Done* (steps 5b and 5c). |
+| `runtime/src/svg.cpp` | `vpp-paint/src/svg.rs` | *Done* (step 5c). Glue to `resvg`: full SVG instead of the C++ path subset. |
+| `runtime/src/canvas.cpp` | `tiny-skia`'s `Pixmap` | *Done* (step 5c). The C++ `Canvas` was a plain pixel buffer, so no VPP file replaces it. The JavaScript canvas API, when it comes, gets its own file. |
+| `runtime/src/script.cpp` | `vpp-script/src/engine.rs`, `quickjs.rs`, `bindings.rs`, `prelude.js` | *Done* (step 6). The page's API is written in JavaScript in `prelude.js` on a few checked natives in `bindings.rs`, so a new `VPP.*` API is a few lines in each rather than a new binding file. |
+| `updater/src/http.cpp` | `vpp-updater/src/http.rs`, `fetch.rs` | *Done.* `fetch.rs` is the `Fetch` trait, so tests stand in for the network. |
+| `updater/src/updater.cpp` | `vpp-updater/src/sync.rs`, `store.rs`, `version.rs` | *Done.* One `sync` does the check and the download, as in C++, so they are one file rather than `check.rs` and `download.rs`. |
+| `viewer/src/main.cpp` (publisher trust) | `vpp-updater/src/trust.rs` | *Done.* Moved out of the viewer: security logic belongs in a tested library. |
+| `viewer/src/main.cpp` (`prefDir`, folders) | `vpp-platform/src/{windows,macos,linux,android,ios}.rs` | *Done for Windows* (step 7b): the data folder and system fonts. One file per OS behind one API (§4.1). |
+| `viewer/src/main.cpp` (the rest) | `vpp-viewer/src/lib.rs`, `app.rs`, `location.rs`, `page_loader.rs`, `page.rs`, `navigation.rs`, `render.rs`, `popup.rs` | *Done* (step 7a). Keyboard shortcuts are mapped in `vpp-desktop/src/window.rs` (7b). Follows the `// ---` sections already in the file. |
+| `viewer/src/main.cpp` (`main`, arguments) | `vpp-desktop/src/main.rs`, `cli.rs`, `window.rs`, `present.rs` | *Done* (step 7b). The desktop entry point; `vpp-android` and `vpp-ios` are new. |
+| `viewer/src/shell.cpp` | `vpp-viewer/src/shell.rs`, `window_prefs.rs`, `input.rs`; later `shell/mobile.rs` | *Done for the desktop* (step 7c). The mobile shell shares navigation and address handling when it comes (§4.1). |
+| `compiler/src/main.cpp` | `vpp-compiler/src/main.rs`, `cli.rs`, `compile.rs` | *Done.* `main.rs` only parses arguments and reports errors. |
+| `packager/src/main.cpp` | `vpp-packager/src/main.rs`, `cli.rs`, `publish.rs`, `keygen.rs`, `inspect.rs` | *Done.* |
 
 # 6. Versioning
 
@@ -252,7 +254,7 @@ VPP has several things that change at different speeds. Each one has its own ver
 | Page / site content | SemVer, set by the publisher | `vpp.json` → manifest | Updater (rollback protection) |
 | `VPP.*` JavaScript API | Integer API level | `vpp.json` `"apiLevel"` | Viewer, page scripts |
 | Template syntax | Covered by the compiler version | — | Compiler |
-| Minimum Rust version | e.g. `1.85` | `Cargo.toml` `rust-version` | Contributors |
+| Minimum Rust version | e.g. `1.87` | `Cargo.toml` `rust-version` | Contributors |
 
 ## 6.1 Software versions
 
@@ -279,7 +281,7 @@ This is unchanged from today. The publisher sets a SemVer version in `vpp.json`.
 * **Readers accept a range, writers write one version.** The viewer reads from the oldest supported to the current version, and the tools always write the current one. Dropping support for an old version is a breaking change and is listed in `CHANGELOG.md`.
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
 * **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
-* **`code.bin` records which engine produced it**, e.g. `quickjs-ng 0.16`, because bytecode is tied to the engine build. On a mismatch the viewer refuses the page with a clear message rather than crashing inside the engine.
+* **`code.bin` holds JavaScript source, not bytecode** (`docs/design/0001-code-bin.md`). Loading bytecode from a publisher would let a hostile one attack the engine, and bytecode is tied to one engine build. The viewer compiles the source itself.
 * **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 6.4 JavaScript API level
@@ -398,12 +400,12 @@ A design document states the problem, the proposal, the alternatives considered,
 Each step ends with something testable. The C++ implementation was removed after step 1, so tests check the Rust code against the written specifications (`docs/formats/`, `docs/reference/`) instead of against C++ output.
 
 1. **Repository scaffolding** *(done)*: workspace, toolchain pin, lints, CI, `deny.toml`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `SECURITY.md`, the crate skeletons, `platforms/`, and the removal of the C++ tree (last in commit `1d1cd11`). Still to do on GitHub: the CLA Assistant check, the `main` rulesets, and the tracking issue. Contributors can join once the CLA check is live (§7.1).
-2. **`vpp-format`:** byte reader and writer, packages, manifests, `code.bin` container, keys, and `version.rs`. Test: round trips, signing and verification, every check in `docs/formats/package.md`, and hostile inputs (truncated, oversized, duplicated names). The first fixtures are written here and frozen.
-3. **`vpp-template`, `vpp-compiler`, `vpp-packager`:** Test: one unit test per template rule in `docs/reference/compiler.md`; `examples/` compile and package, and the packages pass `vpp-format`'s checks.
-4. **`vpp-updater`**, including trust moved out of the viewer. Test: a local static server with two versions of a site; only changed resources are downloaded, rollback is refused, and a changed publisher key is refused.
-5. **`vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`:** Test: screenshot tests that render the examples to PNG headlessly. Reference images are approved by hand the first time, and compared on every change after.
-6. **`vpp-script`:** DOM bindings, `console`, `VPP.window`. Test: the example scripts behave as `docs/reference/viewer.md` describes.
-7. **Windows desktop viewer:** `vpp-viewer` as a library, `vpp-platform/src/windows.rs`, `vpp-desktop`, and `platforms/windows/`: window, desktop shell, navigation, Ctrl+L, and frameless mode. Test: both examples run by hand on Windows. Then tag `v0.1.0` and release for Windows.
+2. **`vpp-format`** *(done)*: byte reader and writer, packages, manifests, keys, and `version.rs`. The `code.bin` container moved to `vpp-script`. Test: round trips, signing and verification, every check in `docs/formats/package.md`, and hostile inputs (truncated, oversized, duplicated names). The first fixtures are written here and frozen.
+3. **Tools** *(done)*: `vpp-packager`; then, brought forward from step 5 because the compiler needs them, the DOM with HTML parsing and `dom.bin` (`vpp-dom`) and CSS parsing with `style.bin` (`vpp-style`); then `vpp-template` and `vpp-compiler`. Test: one unit test per template rule; both `examples/` compile, package, sign, and verify, and their `dom.bin` and `style.bin` are byte for byte what the C++ tools wrote (same SHA-256 as `docs/reference/updater.md` lists). Scripts are checked for syntax with QuickJS and shipped as source in `code.bin` (`docs/design/0001-code-bin.md`); the minimum Rust version rose to 1.87 for `rquickjs`.
+4. **`vpp-updater`** *(done)*, including trust moved out of the viewer. Test: a local static server with two versions of a site; only changed resources are downloaded, rollback is refused, and a changed publisher key is refused.
+5. **Rendering** *(done)*, in three checkpoints: 5a, the cascade and computed styles in `vpp-style` *(done)*; 5b, `vpp-layout` with `taffy` and text measuring with `swash` *(done)*; 5c, `vpp-paint` with `tiny-skia` and `resvg` *(done)*. Screenshot tests use DejaVu Sans, bundled for tests only, so they match on every machine. Test: screenshot tests that render the examples to PNG headlessly. Reference images are approved by hand the first time, and compared on every change after.
+6. **`vpp-script`** *(done)*: running scripts with QuickJS through `rquickjs`, the `ScriptEngine` trait, DOM bindings, `console`, `VPP.window`. Test: the example scripts behave as `docs/reference/viewer.md` describes, and runaway or hostile scripts hit the memory and time limits.
+7. **Windows desktop viewer** *(done)*, in three checkpoints: 7a, `vpp-viewer` as a library with no window: loading and verifying pages in every mode, running them, clicks, links, history, and the popup, tested headlessly *(done)*; 7b, the window: `vpp-desktop` with `winit` and `softbuffer`, `vpp-platform/src/windows.rs` (data folder, system fonts), mouse, keyboard shortcuts, and display scale, keeping the system title bar for now *(done)*; 7c, the shell bar, Ctrl+L and the address field, the `vpp.json` window options, frameless windows with dragging and rounded corners, and the clipboard (`arboard`) *(done)*. Test: both examples run by hand on Windows. `platforms/windows/` (installer, icon, file registration) comes with the release. Then tag `v0.1.0` and release for Windows.
 8. **macOS and Linux:** `vpp-platform/src/macos.rs` and `linux.rs`, `platforms/macos/` and `platforms/linux/`, and their CI jobs. `vpp-desktop` and `vpp-viewer` are shared. Test: both examples run by hand on each.
 9. **Android:** the mobile spike (§4.1) first, then `vpp-android`, `vpp-platform/src/android.rs`, the mobile shell, and `platforms/android/`. Test: both examples run on a phone and the emulator, including the back gesture and the keyboard.
 10. **iOS**, only if the App Store check in §4.1 says it can ship: `vpp-ios`, `vpp-platform/src/ios.rs`, and `platforms/ios/`. Test: both examples run on a device and the simulator.
