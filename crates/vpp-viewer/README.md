@@ -1,23 +1,23 @@
 # vpp-viewer
 
-`vpp-viewer`, the VPP viewer.
+The VPP viewer.
 
-Opens a window, draws the shell (back, forward, reload, address, window buttons), loads and verifies pages, runs them, and navigates between them.
+The whole viewer as a library: the shell (back, forward, reload, address, window buttons), loading and verifying pages, running them, navigating between them, the rendering loop, and input.
 
-**Where it sits:** The top of the stack. It depends on every library crate and nothing depends on it.
+**Where it sits:** Above every other library crate. The entry-point crates `vpp-desktop`, `vpp-android`, and `vpp-ios` start it; it contains no operating-system code of its own.
 
-**Not in this crate:** Trust decisions (`vpp-updater`) and rendering stages (`vpp-style`, `vpp-layout`, `vpp-paint`). The viewer wires them together.
+**Not in this crate:** Trust decisions (`vpp-updater`), rendering stages (`vpp-style`, `vpp-layout`, `vpp-paint`), and operating-system services (`vpp-platform`). The viewer wires them together.
 
-**Depends on:** `vpp-format`, `vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`, `vpp-script`, `vpp-updater`.
+**Depends on:** `vpp-format`, `vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`, `vpp-script`, `vpp-updater`, `vpp-platform`.
 
 ## Status
 
-Not ported yet. The C++ reference implementation is `viewer/src/main.cpp` and `viewer/src/shell.cpp`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Not implemented yet. The removed C++ implementation was `viewer/src/main.cpp` and `viewer/src/shell.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
 
-## Run it
+## Test it on its own
 
 ```sh
-cargo run -p vpp-viewer
+cargo test -p vpp-viewer
 ```
 
 See [ARCHITECTURE.md](../../ARCHITECTURE.md) for how this crate fits with the others, and [CONTRIBUTING.md](../../CONTRIBUTING.md) before sending a change.

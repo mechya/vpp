@@ -26,12 +26,15 @@ vpp-layout = { path = "crates/vpp-layout" }
 vpp-paint = { path = "crates/vpp-paint" }
 vpp-script = { path = "crates/vpp-script" }
 vpp-updater = { path = "crates/vpp-updater" }
+vpp-platform = { path = "crates/vpp-platform" }
+vpp-viewer = { path = "crates/vpp-viewer" }
 
 # Every crate opts in with `[lints] workspace = true`.
 [workspace.lints.rust]
-# vpp-script is the only crate that may need unsafe code, at the JavaScript
-# engine boundary. When it does, it gets its own [lints] table with
-# unsafe_code = "deny" and a // SAFETY: comment on each use.
+# Only vpp-script (JavaScript engine boundary) and vpp-platform, vpp-android,
+# and vpp-ios (Android and Apple APIs) may need unsafe code. When one does,
+# it gets its own [lints] table with unsafe_code = "deny" and a // SAFETY:
+# comment on each use.
 unsafe_code = "forbid"
 missing_docs = "warn"
 

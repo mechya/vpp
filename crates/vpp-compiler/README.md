@@ -12,7 +12,7 @@ Compiles a page and its layouts, components, CSS, and JavaScript into `dom.bin`,
 
 ## Status
 
-Not ported yet. The C++ reference implementation is `compiler/src/main.cpp`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Not implemented yet. The removed C++ implementation was `compiler/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
 
 ## Run it
 

@@ -1,0 +1,19 @@
+[package]
+name = "vpp-ios"
+description = "Builds libvpp_ios.a, which the iOS app in platforms/ios/ links."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+vpp-viewer.workspace = true
+vpp-platform.workspace = true
+
+[lints]
+workspace = true

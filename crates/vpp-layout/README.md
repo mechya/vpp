@@ -12,7 +12,7 @@ Turns styled elements into positioned boxes. Block, flex, and grid come from `ta
 
 ## Status
 
-Not ported yet. The C++ reference implementation is `runtime/src/layout.cpp`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Not implemented yet. The removed C++ implementation was `runtime/src/layout.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
 
 ## Test it on its own
 

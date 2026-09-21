@@ -2,8 +2,8 @@
 
 ## Rust Port Plan
 
-**Status:** In progress. Step 1 (repository scaffolding) is done; see §8.
-**Replaces:** the C++17 / CMake implementation (about 6,200 lines)
+**Status:** In progress. Step 1 (repository scaffolding) is done, and the C++ implementation has been removed; see §8. **Windows desktop comes first**; macOS, Linux, Android, and iOS follow (§4.1).
+**Replaces:** the C++17 / CMake implementation (about 6,200 lines), removed after commit `1d1cd11`. Read any of it with `git show 1d1cd11:<path>`; its behaviour is described in `docs/reference/`.
 **Purpose:** Record how the Rust version is built, laid out, versioned, and opened to contributors, so these choices are made once and not re-argued in every pull request.
 
 Sections 5 to 7 were drafts of `ARCHITECTURE.md`, `docs/versioning.md`, `CONTRIBUTING.md`, and `GOVERNANCE.md`, which now exist. Where they differ from this plan, those files win.
@@ -41,6 +41,9 @@ Sections 5 to 7 were drafts of `ARCHITECTURE.md`, `docs/versioning.md`, `CONTRIB
 | HTTP | `ureq` with `rustls` | `http.cpp` | Small and blocking, with no async runtime. Update checks run on a worker thread. No OpenSSL dependency. |
 | `vpp.json`, manifests | `serde` + `serde_json` | hand-written JSON reader in `package.cpp` | Nested objects such as `window` and future config without a custom parser. |
 | Command line | `clap` (derive) | hand-written argument parsing | Consistent `--help` across the tools. |
+| OS services on desktop | `directories` (data folders), `arboard` (clipboard) | `prefDir` and friends in `viewer/src/main.cpp` | Maintained, cross-platform, and small. Used only inside `vpp-platform` (§4.1). |
+| OS services on Android | `jni`, with `android-activity` through `winit` | nothing yet | The standard way to reach Android APIs from Rust. Built with `cargo-ndk`. |
+| OS services on Apple platforms | `objc2` and its framework crates | nothing yet | Maintained bindings to Foundation, AppKit, and UIKit, used where `winit` does not already cover a service. |
 | Errors | `thiserror` in libraries, `anyhow` in binaries | `bool` + `std::string* error` | Typed errors that carry source locations, which the template spec requires for compiler errors. |
 
 Every crate listed is under MIT, Apache 2.0, zlib, or a similarly permissive licence. `cargo-deny` enforces this (§7.7).
@@ -67,13 +70,19 @@ vpp/
 │   ├── vpp-paint/          display list → pixels: tiny-skia, swash, resvg
 │   ├── vpp-script/         ScriptEngine trait, rquickjs backend, DOM and VPP.* bindings
 │   ├── vpp-updater/        page store, publisher trust, manifest checks, downloads
+│   ├── vpp-platform/       OS services: data folders, clipboard, open URL, system fonts (§4.1)
 │   ├── vpp-compiler/       binary: pages → dom.bin, style.bin, code.bin
 │   ├── vpp-packager/       binary: sign and publish a site folder
-│   └── vpp-viewer/         binary: window, shell, navigation
+│   ├── vpp-viewer/         library: the whole viewer (shell, navigation, rendering loop, input)
+│   ├── vpp-desktop/        binary `vpp-viewer`: entry point for Windows, macOS, and Linux
+│   ├── vpp-android/        native library: entry point for the Android app
+│   └── vpp-ios/            static library: entry point for the iOS app
+├── platforms/              everything per OS that is not Rust (§4.1)
 ├── examples/               unchanged; also the integration test input
 ├── tests/fixtures/         packages of every supported format version (§6.3)
 └── docs/
     ├── formats/            one file per binary format (§6.3)
+    ├── reference/          how the removed C++ implementation behaved: the port's specification
     └── design/             design documents for larger changes (§7.5)
 ```
 
@@ -83,6 +92,99 @@ Why it is split this way:
 * **Tools stay light.** The compiler and packager never pull in windowing or rasterisation, so they build fast and run in CI without a display.
 * **One area per crate.** Each crate is something a contributor can own, and `CODEOWNERS` maps it to its reviewers.
 * **`vpp-format` stands alone.** It has no heavy dependencies, so a package inspector or signature verifier can be built on it alone.
+
+## 4.1 Platforms: Windows, macOS, Linux, Android, iOS
+
+**Order: Windows desktop first.** macOS and Linux follow, then Android, then iOS (§8). The folders and placeholder files for all five exist from the start (`crates/vpp-platform/src/<os>.rs`, `platforms/<os>/`), so later work has a home and nothing needs restructuring.
+
+Almost all of VPP is the same on every platform: formats, DOM, style, layout, paint, script, and most of the viewer. So there is **one codebase, not a copy per OS**. What differs lives in exactly two places, with one rule each:
+
+* **Rust code that differs per OS lives only in `vpp-platform` and the three entry-point crates.** No other crate contains `#[cfg(target_os = …)]`.
+* **Everything per OS that is not Rust lives in `platforms/<os>/`**: app projects, manifests, icons, installers, signing.
+
+### `vpp-platform`: one API, one file per OS
+
+```text
+crates/vpp-platform/src/
+├── lib.rs        the shared API; picks the OS file at compile time
+├── windows.rs
+├── macos.rs
+├── linux.rs      X11 and Wayland
+├── android.rs
+└── ios.rs
+```
+
+`lib.rs` declares each file behind its target, for example `#[cfg(target_os = "android")] mod android;`, and re-exports the same functions from all of them. A contributor fixing an Android problem edits `android.rs` and nothing else.
+
+What it provides:
+
+| Service | Why the OS matters |
+|---|---|
+| Data, cache, and config folders | The page store, pinned publisher keys, and preferences go to a different place on each OS, and to the app's private folder on Android and iOS. |
+| System font folders and fallback fonts | Text needs a font for every script, and each OS keeps them elsewhere. |
+| Clipboard | For the address field and text in pages. |
+| Open a URL in the system browser | For links that are not VPP pages. |
+| Form factor: desktop or mobile | Chooses the shell (below). |
+| Registering `.vpp` files and VPP links | File associations and URL schemes are set up differently on each OS. |
+
+**Only `vpp-viewer` depends on `vpp-platform`.** The library crates take folders and services as arguments. For example, `vpp-updater` is given its store folder rather than asking the OS. That keeps them testable on any machine and free of OS code.
+
+### The viewer is a library with thin entry points
+
+Android and iOS cannot start a Rust program on its own; the phone's app project loads Rust as a library. So the viewer is split:
+
+| Crate | Builds | Used by |
+|---|---|---|
+| `vpp-viewer` | Rust library: the whole viewer | the three crates below |
+| `vpp-desktop` | the `vpp-viewer` executable | Windows, macOS, Linux |
+| `vpp-android` | `libvpp_android.so` (a `cdylib`), with `android_main` | the Gradle project in `platforms/android/` |
+| `vpp-ios` | `libvpp_ios.a` (a `staticlib`), with a C entry function | the Xcode project in `platforms/ios/` |
+
+Each entry-point crate stays under about 100 lines: it creates the `winit` event loop and hands it to `vpp_viewer::run`. `winit` provides windows, input, and the event loop on all five platforms.
+
+### Desktop and mobile shells
+
+The shell is itself a VPP page, so there are two of them, chosen by the form factor from `vpp-platform`:
+
+* **Desktop shell:** frameless window, back, forward, reload, address field, and the minimize, maximize, and close buttons, as today.
+* **Mobile shell:** no window buttons. The address bar sits at the top and hides on scroll, and back follows the system: the Android back gesture and the iOS edge swipe. Touch input reaches pages as pointer events.
+
+The invariants hold on both: pages cannot style or cover the shell, and moving to a different site reveals the real address.
+
+### `platforms/`
+
+```text
+platforms/
+├── assets/     the source icon (SVG); each platform's icons are generated from it
+├── windows/    installer, .ico icon, application manifest
+├── macos/      Info.plist, .icns icon, entitlements, signing and notarisation
+├── linux/      .desktop file, icons, AppImage or Flatpak manifest
+├── android/    Gradle project: AndroidManifest.xml, the activity, packaging
+└── ios/        Xcode project: Info.plist, the Swift entry point, signing
+```
+
+Each folder has a `README.md` saying how to build and package for that OS, and which tools it needs, such as Android Studio and the NDK, or Xcode.
+
+### Targets
+
+| Platform | Status | Architectures | CI |
+|---|---|---|---|
+| Windows | **Now** | x86_64; aarch64 later | tests |
+| macOS | Later (§8, step 8) | aarch64, x86_64 | tests, once started |
+| Linux | Later (§8, step 8) | x86_64; aarch64 later | tests, once started |
+| Android | Later (§8, step 9) | arm64-v8a, plus x86_64 for the emulator | build only, with `cargo-ndk` |
+| iOS | Later, if allowed (§8, step 10) | aarch64 devices, aarch64 simulator | build only |
+
+CI tests on Windows only for now. Each platform's CI job is added when its work starts.
+
+### Risks to check before building mobile
+
+* **The iOS App Store may reject VPP.** Apple limits apps that download and run code (App Store Review Guidelines 2.5.2) and requires apps that browse the web to use WebKit (2.5.6). VPP downloads pages and runs their JavaScript in its own engine. Read the guidelines current at the time, and decide whether iOS goes ahead, before any iOS work. Android has no equivalent rule.
+* **`softbuffer` on mobile.** Confirm that it presents pixels on Android and iOS. If it does not, the fallback is presenting the same pixel buffer through `wgpu`, which changes only `vpp-viewer`'s presentation code.
+* **The on-screen keyboard.** Typing in the address field and in page inputs needs the soft keyboard and text input on Android and iOS. `winit`'s support here is more limited than on desktop, so test it early.
+* **QuickJS on mobile.** Confirm that `rquickjs` builds for the Android and iOS targets.
+
+A **mobile spike** checks all four at the start of step 9 (§8): a window on Android and iOS that fills pixels from `softbuffer`, takes touch and keyboard input, and runs one line of JavaScript. Doing it after the Windows viewer is an accepted risk: if `softbuffer` fails on mobile, only the presentation code in `vpp-viewer` changes, not the rendering crates.
 
 # 5. Source files that are easy to understand
 
@@ -107,9 +209,9 @@ Why it is split this way:
 
 ## 5.3 File map: C++ to Rust
 
-This table is the checklist for the port. The tracking issue has one checkbox per row, and each row is a good first or second contribution.
+This table is the checklist for the port. The tracking issue has one checkbox per row, and each row is a good first or second contribution. The C++ files are gone from the tree; read one with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`.
 
-| C++ today | Rust file(s) | Notes |
+| Removed C++ file | Rust file(s) | Notes |
 |---|---|---|
 | `runtime/include/vpp/bytes.h` | `vpp-format/src/bytes.rs` | Reader and writer primitives. |
 | `runtime/src/binary.cpp` | `vpp-dom/src/binary.rs` (`dom.bin`), `vpp-style/src/binary.rs` (`style.bin`) | Each codec lives next to the type it encodes, so `vpp-format` never depends on the DOM or CSS. Both use `vpp-format`'s byte reader and version numbers. |
@@ -132,8 +234,10 @@ This table is the checklist for the port. The tracking issue has one checkbox pe
 | `updater/src/http.cpp` | `vpp-updater/src/http.rs` | |
 | `updater/src/updater.cpp` | `vpp-updater/src/store.rs`, `check.rs`, `download.rs` | |
 | `viewer/src/main.cpp` (publisher trust) | `vpp-updater/src/trust.rs` | Moves out of the viewer: security logic belongs in a tested library. |
-| `viewer/src/main.cpp` (the rest) | `vpp-viewer/src/main.rs`, `app.rs`, `page_loader.rs`, `navigation.rs`, `render.rs`, `input.rs`, `popup.rs` | Follows the `// ---` sections already in the file. |
-| `viewer/src/shell.cpp` | `vpp-viewer/src/shell.rs` | |
+| `viewer/src/main.cpp` (`prefDir`, folders) | `vpp-platform/src/{windows,macos,linux,android,ios}.rs` | One file per OS behind one API (§4.1). |
+| `viewer/src/main.cpp` (the rest) | `vpp-viewer/src/lib.rs`, `app.rs`, `page_loader.rs`, `navigation.rs`, `render.rs`, `input.rs`, `popup.rs` | Follows the `// ---` sections already in the file. |
+| `viewer/src/main.cpp` (`main`, arguments) | `vpp-desktop/src/main.rs` | The desktop entry point; `vpp-android` and `vpp-ios` are new. |
+| `viewer/src/shell.cpp` | `vpp-viewer/src/shell.rs`, `shell/desktop.rs`, `shell/mobile.rs` | The two shells share navigation and address handling (§4.1). |
 | `compiler/src/main.cpp` | `vpp-compiler/src/main.rs`, `cli.rs`, `compile.rs` | `main.rs` only parses arguments and reports errors. |
 | `packager/src/main.cpp` | `vpp-packager/src/main.rs`, `cli.rs`, `publish.rs`, `keygen.rs` | |
 
@@ -154,7 +258,7 @@ VPP has several things that change at different speeds. Each one has its own ver
 
 * **One version for the whole workspace**, set once with `version.workspace = true`. The crates are released together, so there is no matrix of compatible crate versions for anyone to track.
 * **`0.x` until the package format is declared stable.** In `0.x`, a minor bump (`0.4` → `0.5`) may break things and a patch bump may not. `1.0.0` means the package format and `VPP.*` API level 1 are frozen, apart from additive changes.
-* **Releases are git tags** (`v0.4.0`) made from `main`. CI builds the viewer and tools for the three platforms and attaches them to the GitHub release.
+* **Releases are git tags** (`v0.4.0`) made from `main`. CI builds the viewer and tools for each supported platform (Windows first) and attaches them to the GitHub release.
 * **Decision: VPP crates are not published to crates.io.** Every crate sets `publish = false`. The viewer and tools are distributed only as GitHub release binaries and through the source repository. Reasons:
   * A crates.io upload is permanent: a version can be yanked but never deleted.
   * Published crates spread through other projects' dependency trees, where the commercial-use threshold cannot be tracked or enforced.
@@ -174,9 +278,9 @@ This is unchanged from today. The publisher sets a SemVer version in `vpp.json`.
 * **All constants live in `vpp-format/src/version.rs`** with a one-line history comment per version, as `package.cpp` does today (`// 2: page name; 3: window preferences`).
 * **Readers accept a range, writers write one version.** The viewer reads from the oldest supported to the current version, and the tools always write the current one. Dropping support for an old version is a breaking change and is listed in `CHANGELOG.md`.
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
-* **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. `packager/README.md` currently holds this for packages; it moves there.
+* **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
 * **`code.bin` records which engine produced it**, e.g. `quickjs-ng 0.16`, because bytecode is tied to the engine build. On a mismatch the viewer refuses the page with a clear message rather than crashing inside the engine.
-* **During the port**, the Rust code must read and write format version 3 byte for byte as the C++ tools do; that is how the port is proven correct. The first format change after the C++ tree is removed becomes version 4.
+* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 6.4 JavaScript API level
 
@@ -225,6 +329,8 @@ Until the CLA check is live, no outside code is merged. The policy goes at the t
 | `CLA.md` | Individual and corporate Contributor License Agreement (§7.1). |
 | `GOVERNANCE.md` | Who decides what, and how maintainers are chosen (§7.3). |
 | `ARCHITECTURE.md` | The map (§5.1). |
+| `AGENTS.md`, `CLAUDE.md` | Instructions that AI coding tools read before working: what to read, what to ask the human first, what never to do. |
+| `docs/review-checklist.md` | What every reviewer checks, human or AI, including malicious or sneaky changes. |
 | `CODE_OF_CONDUCT.md` | Contributor Covenant, with a contact address. |
 | `SECURITY.md` | Private reporting through GitHub security advisories. The signing and update code makes this necessary from day one. |
 | `.github/CODEOWNERS` | The lead maintainer owns `*`. Area maintainers are added per crate. `vpp-format`, `vpp-updater`, and anything touching signatures list the lead maintainer only. |
@@ -252,7 +358,7 @@ This makes the lead maintainer the bottleneck for merges. If that becomes a prob
 
 ## 7.4 Pull request checklist
 
-* `cargo fmt`, `cargo clippy -- -D warnings`, and `cargo test` pass locally. CI runs the same on Windows, macOS, and Linux.
+* `cargo fmt`, `cargo clippy -- -D warnings`, and `cargo test` pass locally. CI runs the same on Windows; macOS and Linux join when those platforms start.
 * Tests are added or updated. Rendering changes include a screenshot test.
 * `CHANGELOG.md` has a line under `Unreleased` if users will notice.
 * A format or API level change bumps the version, adds a fixture, and updates `docs/formats/` (§6.3, §6.4).
@@ -275,30 +381,32 @@ A design document states the problem, the proposal, the alternatives considered,
 
 * **Labels:** `good first issue`, `help wanted`, `area/<crate>`, `needs-design`, `format-change`.
 * **Step-by-step guides** in `docs/guides/` for the most common changes: *adding a CSS property*, *adding a `VPP.*` API method*, *adding a template feature*. Each lists the exact files to touch, following the file map in §5.3.
-* **The port itself is the on-ramp.** One tracking issue, with one checkbox per row of §5.3. Most rows are self-contained and come with a C++ reference implementation to compare against.
+* **The port itself is the on-ramp.** One tracking issue, with one checkbox per row of §5.3. Most rows are self-contained, with the removed C++ file (`git show 1d1cd11:<path>`) and its behaviour in `docs/reference/` to work from.
 * **Examples double as tests.** A contributor can add a page to `examples/` that shows a bug. CI compiles and packages it, and screenshot tests catch regressions.
 
 ## 7.7 Code and dependency rules
 
 * **Edition 2024**, with the toolchain pinned (§6.6).
-* **`#![forbid(unsafe_code)]`** in every crate except `vpp-script`, where the engine boundary may need it. Any `unsafe` there needs a `// SAFETY:` comment explaining why it holds.
+* **`#![forbid(unsafe_code)]`** in every crate except `vpp-script` (the engine boundary) and `vpp-platform`, `vpp-android`, and `vpp-ios` (calls into Android and Apple APIs), which may need it. Any `unsafe` there needs a `// SAFETY:` comment explaining why it holds.
 * **Workspace-wide lints** in the root `Cargo.toml`, so every crate has the same rules without repeating them.
-* **CI:** `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, and `cargo deny check` (licences and advisories) on all three platforms.
+* **CI:** `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, and `cargo deny check` (licences and advisories), on Windows for now.
 * **Fuzzing:** `cargo-fuzz` targets for package reading, the binary decoders, and the template compiler, run on a schedule.
 * **New dependencies** need a permissive licence (MIT, Apache 2.0, zlib, BSD, or similar), active maintenance, and a reason. `THIRD-PARTY-NOTICES.md` is updated in the same pull request.
 
 # 8. Port order
 
-Each step ends with something testable. The C++ tree keeps building until step 7 is done.
+Each step ends with something testable. The C++ implementation was removed after step 1, so tests check the Rust code against the written specifications (`docs/formats/`, `docs/reference/`) instead of against C++ output.
 
-1. **Repository scaffolding:** workspace, toolchain pin, lints, CI, `deny.toml`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `SECURITY.md`, the CLA Assistant check, the `main` rulesets, and the tracking issue. Contributors can join from here on, once the CLA check is live (§7.1).
-2. **`vpp-format`:** binary encoding, packages, manifests, keys, and `version.rs`. Test: reads C++-built packages (the first fixtures) and writes identical bytes.
-3. **`vpp-template`, `vpp-compiler`, `vpp-packager`:** Test: `dom.bin` and `style.bin` for `examples/` match the C++ output.
+1. **Repository scaffolding** *(done)*: workspace, toolchain pin, lints, CI, `deny.toml`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `SECURITY.md`, the crate skeletons, `platforms/`, and the removal of the C++ tree (last in commit `1d1cd11`). Still to do on GitHub: the CLA Assistant check, the `main` rulesets, and the tracking issue. Contributors can join once the CLA check is live (§7.1).
+2. **`vpp-format`:** byte reader and writer, packages, manifests, `code.bin` container, keys, and `version.rs`. Test: round trips, signing and verification, every check in `docs/formats/package.md`, and hostile inputs (truncated, oversized, duplicated names). The first fixtures are written here and frozen.
+3. **`vpp-template`, `vpp-compiler`, `vpp-packager`:** Test: one unit test per template rule in `docs/reference/compiler.md`; `examples/` compile and package, and the packages pass `vpp-format`'s checks.
 4. **`vpp-updater`**, including trust moved out of the viewer. Test: a local static server with two versions of a site; only changed resources are downloaded, rollback is refused, and a changed publisher key is refused.
-5. **`vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`:** Test: screenshot tests that render the examples to PNG headlessly and compare against reference images.
-6. **`vpp-script`:** DOM bindings, `console`, `VPP.window`. Test: the example scripts behave the same.
-7. **`vpp-viewer`:** window, shell, navigation, Ctrl+L, frameless mode. Test: both examples run by hand on all three platforms.
-8. **Remove C++:** delete `CMakeLists.txt`, `build.cmd`, and the C++ sources. Update `README.md` and `THIRD-PARTY-NOTICES.md`, then tag `v0.1.0`.
+5. **`vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`:** Test: screenshot tests that render the examples to PNG headlessly. Reference images are approved by hand the first time, and compared on every change after.
+6. **`vpp-script`:** DOM bindings, `console`, `VPP.window`. Test: the example scripts behave as `docs/reference/viewer.md` describes.
+7. **Windows desktop viewer:** `vpp-viewer` as a library, `vpp-platform/src/windows.rs`, `vpp-desktop`, and `platforms/windows/`: window, desktop shell, navigation, Ctrl+L, and frameless mode. Test: both examples run by hand on Windows. Then tag `v0.1.0` and release for Windows.
+8. **macOS and Linux:** `vpp-platform/src/macos.rs` and `linux.rs`, `platforms/macos/` and `platforms/linux/`, and their CI jobs. `vpp-desktop` and `vpp-viewer` are shared. Test: both examples run by hand on each.
+9. **Android:** the mobile spike (§4.1) first, then `vpp-android`, `vpp-platform/src/android.rs`, the mobile shell, and `platforms/android/`. Test: both examples run on a phone and the emulator, including the back gesture and the keyboard.
+10. **iOS**, only if the App Store check in §4.1 says it can ship: `vpp-ios`, `vpp-platform/src/ios.rs`, and `platforms/ios/`. Test: both examples run on a device and the simulator.
 
 # 9. Not decided here
 
@@ -306,3 +414,5 @@ Each step ends with something testable. The C++ tree keeps building until step 7
 * Moving from `rquickjs` to `boa`. Revisit once `boa` performance and conformance are enough for real pages.
 * The runtime templating design (`{{ }}`, bindings). See [template-syntax.md](template-syntax.md).
 * Publishing crates to crates.io: decided against (§6.1).
+* Minimum OS versions for each platform, and the installer format for each desktop OS (MSIX or MSI, DMG, AppImage or Flatpak). Decided in `platforms/<os>/README.md` when that platform is packaged.
+* Whether iOS ships at all (§4.1).

@@ -1,0 +1,14 @@
+[package]
+name = "vpp-platform"
+description = "Gives the viewer one API for what differs per operating system: data, cache, and config folders, system fonts, the clipboard, opening a URL in the system browser, the form factor (desktop or mobile), and registering .vpp files and links."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

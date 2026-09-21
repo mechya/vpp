@@ -11,3 +11,16 @@
 /LICENSE.md                 @mechya
 /GOVERNANCE.md              @mechya
 /.github/                   @mechya
+
+# Files that run code at build time, or set the rules for everyone.
+/Cargo.toml                 @mechya
+/Cargo.lock                 @mechya
+/deny.toml                  @mechya
+/rust-toolchain.toml        @mechya
+build.rs                    @mechya
+/AGENTS.md                  @mechya
+/CLAUDE.md                  @mechya
+/CONTRIBUTING.md            @mechya
+/SECURITY.md                @mechya
+/docs/review-checklist.md   @mechya
+/tests/fixtures/            @mechya

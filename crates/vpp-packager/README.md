@@ -12,7 +12,7 @@ Creates publisher keys, and hashes, signs, and publishes compiled pages as `.vpp
 
 ## Status
 
-Not ported yet. The C++ reference implementation is `packager/src/main.cpp`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+Not implemented yet. The removed C++ implementation was `packager/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
 
 ## Run it
 

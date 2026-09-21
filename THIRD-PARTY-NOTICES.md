@@ -1,16 +1,15 @@
 # Third-Party Notices
 
-VPP is licensed under the VPP Source-Available License 1.0 (see `LICENSE.md`). The components below are separate works with their own licences, which continue to apply to them. They are fetched at build time by CMake and are not modified.
+VPP is licensed under the VPP Source-Available License 1.0 (see `LICENSE.md`). Third-party components it uses are separate works under their own licences, which continue to apply to them.
+
+## Rust dependencies
+
+VPP's Rust crates are fetched by Cargo at build time and are not modified. None are used yet; each is added to the table below in the pull request that introduces it (`CONTRIBUTING.md`, "Dependencies"). `cargo deny check` enforces the allowed licences listed in `deny.toml`.
 
 | Component | Used for | Licence | Source |
 |---|---|---|---|
-| SDL3 | window, input, presenting the pixel buffer | zlib | https://github.com/libsdl-org/SDL |
-| stb_truetype | glyph rasterisation | public domain / MIT | https://github.com/nothings/stb |
-| lexbor | HTML parsing in development mode and in the compiler | Apache 2.0 | https://github.com/lexbor/lexbor |
-| quickjs-ng | JavaScript bytecode execution | MIT | https://github.com/quickjs-ng/quickjs |
-| ed25519 (orlp) | publisher signatures | zlib | https://github.com/orlp/ed25519 |
 
-The rendering engine (DOM, CSS, layout, painting, SVG paths), the binary formats, the package and update system, the template compiler, and the viewer shell are VPP's own code.
+The C++ implementation removed after commit `1d1cd11` used SDL3, stb_truetype, lexbor, quickjs-ng, and orlp's ed25519; the notices for them are in that commit.
 
 ## Examples
 

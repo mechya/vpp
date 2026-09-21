@@ -12,4 +12,4 @@
 //!
 //! # Status
 //!
-//! Not ported yet. The C++ reference implementation is `runtime/src/package.cpp`, `crypto.cpp`, `sha256.cpp`, and `runtime/include/vpp/bytes.h`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+//! Not implemented yet. The removed C++ implementation was `runtime/src/package.cpp`, `crypto.cpp`, `sha256.cpp`, and `runtime/include/vpp/bytes.h`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.

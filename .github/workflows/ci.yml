@@ -21,12 +21,32 @@ jobs:
       - uses: actions/checkout@v5
       - run: cargo fmt --all --check
 
+  hidden-characters:
+    name: Hidden characters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Zero-width and text-direction characters can make code read differently
+      # from how it runs ("Trojan Source"). None belong in this repository.
+      - name: Refuse zero-width and direction-changing characters
+        env:
+          LC_ALL: C.UTF-8
+        run: |
+          found=$(git ls-files -z | xargs -0 grep -lIP '[\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{202A}-\x{202E}\x{2066}-\x{2069}]' || true)
+          if [ -n "$found" ]; then
+            echo "::error::Hidden or direction-changing Unicode characters in:"
+            echo "$found"
+            exit 1
+          fi
+
   test:
     name: Clippy and tests (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Windows is the current focus. Add macos-latest and ubuntu-latest when
+        # those platforms start (docs/rust-port.md §8).
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -35,7 +55,7 @@ jobs:
 
   msrv:
     name: Minimum Rust version
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
       # Keep in step with rust-version in Cargo.toml.

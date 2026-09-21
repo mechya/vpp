@@ -2,7 +2,7 @@
 
 **VPP (Viewer Package Platform)** is an experimental lightweight web viewer and application platform.
 
-> **VPP is being ported from C++ to Rust.** See [docs/rust-port.md](docs/rust-port.md) for the plan, [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organised, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
+> **VPP is being rewritten in Rust, Windows desktop first.** See [docs/rust-port.md](docs/rust-port.md) for the plan, [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organised, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
 
 It combines familiar web technologies with a lightweight native viewer, application runtime, packaging system, secure update mechanism, and development tools.
 
@@ -117,47 +117,41 @@ VPP aims to provide:
 
 ```text
 vpp/
+├── README.md, LICENSE.md, COMMERCIAL-LICENSING.md, THIRD-PARTY-NOTICES.md
+├── ARCHITECTURE.md       how the code is organised: read this first
+├── CONTRIBUTING.md       how to build, test, and contribute
+├── Cargo.toml            the Rust workspace
 │
-├── README.md
-├── LICENSE.md
-├── COMMERCIAL-LICENSING.md
-├── THIRD-PARTY-NOTICES.md
-├── .gitignore
+├── crates/               all Rust code, one crate per area
+│   ├── vpp-format/       package format, signing, hashing
+│   ├── vpp-template/     layouts, includes, components
+│   ├── vpp-dom/          document tree
+│   ├── vpp-style/        CSS
+│   ├── vpp-layout/       layout
+│   ├── vpp-paint/        painting, text, SVG
+│   ├── vpp-script/       JavaScript
+│   ├── vpp-updater/      page store and updates
+│   ├── vpp-platform/     operating-system services, one file per OS
+│   ├── vpp-viewer/       the viewer
+│   ├── vpp-desktop/      desktop entry point (Windows now; macOS, Linux later)
+│   ├── vpp-android/      Android entry point (later)
+│   ├── vpp-ios/          iOS entry point (later)
+│   ├── vpp-compiler/     the vppc tool
+│   └── vpp-packager/     the vpppack tool
 │
-├── viewer/
-│   └── README.md
-│
-├── runtime/
-│   └── README.md
-│
-├── compiler/
-│   └── README.md
-│
-├── packager/
-│   └── README.md
-│
-├── updater/
-│   └── README.md
-│
-├── sdk/
-│   └── README.md
-│
-├── tools/
-│   └── README.md
-│
-├── examples/
-│   └── README.md
-│
-├── tests/
-│
-└── docs/
+├── platforms/            per-OS app projects, installers, icons: windows, macos, linux, android, ios
+├── examples/             example sites, also used as tests
+├── tests/fixtures/       packages of every supported format version
+└── docs/                 plan, formats, reference behaviour, design documents
 ```
+
+Build with `cargo build`. The Rust port is in progress, Windows desktop first; see [docs/rust-port.md](docs/rust-port.md).
 
 ## Components
 
 ### VPP Viewer
 
-`viewer/`
+`crates/vpp-viewer`, started by `crates/vpp-desktop`
 
 Native VPP application responsible for displaying:
 
@@ -169,7 +163,7 @@ Native VPP application responsible for displaying:
 
 ### VPP Runtime
 
-`runtime/`
+`crates/vpp-dom`, `vpp-style`, `vpp-layout`, `vpp-paint`, `vpp-script`
 
 Execution environment used by VPP applications.
 
@@ -186,7 +180,7 @@ Responsibilities include:
 
 ### VPP Compiler
 
-`compiler/`
+`crates/vpp-compiler`, with `crates/vpp-template`
 
 Converts page source into VPP-compatible compiled resources, one set per page.
 
@@ -202,7 +196,7 @@ Layouts, includes, and components are expanded into the page at this step. Devel
 
 ### VPP Packager
 
-`packager/`
+`crates/vpp-packager`, with `crates/vpp-format`
 
 Creates one signed `.vpp` package per page, and publishes a site folder that any static server can host.
 
@@ -222,7 +216,7 @@ home.vpp, profile.vpp  +  home.vppm, profile.vppm  +  res/
 
 ### VPP Updater
 
-`updater/`
+`crates/vpp-updater`
 
 Handles installing pages from a URL and keeping them current.
 
@@ -242,7 +236,7 @@ Download: style.bin only. Then home.vpp, which shares it, is current too.
 
 ### VPP SDK
 
-`sdk/`
+`docs/sdk.md`
 
 Defines APIs available to VPP applications.
 
@@ -260,7 +254,7 @@ VPP.update
 
 ### VPP Tools
 
-`tools/`
+`docs/tools.md`
 
 Development utilities such as:
 
@@ -295,7 +289,7 @@ home.vpp
 └── assets.bin     images and fonts (planned)
 ```
 
-The exact byte layout is documented in `packager/README.md`.
+The exact byte layout is documented in [docs/formats/package.md](docs/formats/package.md).
 
 ## Security Model
 
@@ -455,9 +449,9 @@ Debug information should normally remain outside the distributed package.
 
 ## Status
 
-VPP has a working vertical slice on Windows. See `viewer/README.md` for how to build and run it.
+VPP is being rewritten in Rust, Windows desktop first ([docs/rust-port.md](docs/rust-port.md)). The C++ implementation reached the phases below before it was removed (commit `1d1cd11`); the Rust port rebuilds them, and [docs/reference/](docs/reference/) describes how each behaved.
 
-Done:
+Done in the C++ implementation:
 
 - Phase 1 viewer: frameless native window, own rendering engine (DOM, CSS cascade, block, inline, and flex layout, painting)
 - Phase 2 runtime: JavaScript execution with DOM bindings, events, and the `VPP.window` API
@@ -468,7 +462,7 @@ Done:
 - Phase 7 sites: one `.vpp` per page, one resource per source file shared by hash, links between pages with history, build-time templates (layouts, slots, includes, components with properties and scoped CSS)
 - Phase 8 shell: the viewer frame as a VPP page with address field, history buttons, window buttons, resize edges, a start page, and per-site window preferences with Ctrl+L override; rounded transparent corners, auto-height windows, and inline SVG icons for sites that draw their own frame
 
-Next: the runtime half of the template specification (bindings, events, component scripts), then storage and assets.
+Next: the Rust port to a working Windows viewer, then macOS and Linux, then Android and iOS. After that, the runtime half of the template specification (bindings, events, component scripts), storage, and assets.
 
 Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.
 

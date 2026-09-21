@@ -1,5 +1,7 @@
 # VPP Examples — Viewer Package Platform
 
+> The commands below use the VPP tools (`vppc`, `vpppack`, `vpp-viewer`). They run again once the Rust port reaches them; see `docs/rust-port.md` §8.
+
 **VPP Examples** contains reference and test sites for **VPP — Viewer Package Platform**.
 
 Each example is designed to demonstrate or validate a specific VPP capability such as rendering, templates, compiled JavaScript execution, events, navigation, packaging, and updates.
@@ -29,18 +31,18 @@ examples/hello-world/
 Run in development mode, expanding the templates and parsing the source files:
 
 ```text
-build\viewer\vpp_viewer.exe examples\hello-world\pages\home.html
+vpp-viewer examples\hello-world\pages\home.html
 ```
 
 Create a publisher key once, then compile, sign, package, and run from the `.vpp` files:
 
 ```text
 cd examples\hello-world
-..\..\build\packager\vpppack.exe keygen
+vpppack keygen
 cd ..\..
-build\compiler\vppc.exe examples\hello-world
-build\packager\vpppack.exe examples\hello-world --key examples\hello-world\publisher.key --publish
-build\viewer\vpp_viewer.exe examples\hello-world\out\home.vpp
+vppc examples\hello-world
+vpppack examples\hello-world --key examples\hello-world\publisher.key --publish
+vpp-viewer examples\hello-world\out\home.vpp
 ```
 
 Click **About** in the menu to open the second page. Alt+Left, or the mouse back button, returns. Serve `out\` with any static server and open `http://host/out/home.vpp` in the viewer to install it over HTTP; the second page is fetched when first visited, and the shared stylesheet and script are downloaded once.
@@ -72,7 +74,7 @@ examples/app-window/
 ```
 
 ```text
-build\viewer\vpp_viewer.exe examples\app-window\pages\home.html
+vpp-viewer examples\app-window\pages\home.html
 ```
 
 ## Planned

@@ -2,7 +2,7 @@
 
 Start here. This page is the map of VPP: what happens to a page from source to screen, which crate does each part, and the rules that must never break. It names files and types but not line numbers, which go stale.
 
-> **The port is in progress.** VPP is moving from C++ to Rust (`docs/rust-port.md`). The Rust crates below are being filled in one by one; until a crate is ported, its C++ reference implementation (named in the crate's README) is what runs.
+> **The port is in progress.** VPP is being rewritten in Rust (`docs/rust-port.md`), Windows desktop first. The C++ implementation was removed after commit `1d1cd11`; `docs/reference/` describes how it behaved, and each crate's README names the C++ files it replaces. Until a crate is written, nothing in it runs yet.
 
 ## From source to screen
 
@@ -52,11 +52,24 @@ Start here. This page is the map of VPP: what happens to a page from source to s
 | `vpp-updater` | Page store, publisher trust, manifest checks, downloads | `vpp-format` |
 | `vpp-compiler` | `vppc` binary | format, template, dom, style, script |
 | `vpp-packager` | `vpppack` binary | `vpp-format` |
-| `vpp-viewer` | `vpp-viewer` binary | every library crate |
+| `vpp-platform` | OS services: data folders, system fonts, clipboard, open URL, form factor. One file per OS. | — |
+| `vpp-viewer` | The whole viewer as a library: shell, navigation, rendering loop, input | every library crate |
+| `vpp-desktop` | `vpp-viewer` executable for Windows now, macOS and Linux later | `vpp-viewer`, `vpp-platform` |
+| `vpp-android` | Native library loaded by the Android app (later) | `vpp-viewer`, `vpp-platform` |
+| `vpp-ios` | Static library linked by the iOS app (later) | `vpp-viewer`, `vpp-platform` |
 
-**Dependencies only point down the table**, never up: `vpp-format` knows nothing of the DOM, and nothing depends on the viewer. If a change seems to need an upward dependency, the code is in the wrong crate. Ask in the issue before working around it.
+**Dependencies only point down the table**, never up: `vpp-format` knows nothing of the DOM, and nothing depends on the entry points (`vpp-desktop`, `vpp-android`, `vpp-ios`). If a change seems to need an upward dependency, the code is in the wrong crate. Ask in the issue before working around it.
 
 Each crate's `src/lib.rs` (or `src/main.rs`) starts with a doc comment saying what it does, where it sits, what it deliberately does not do, and which file to read first.
+
+## Platforms
+
+VPP targets Windows, macOS, Linux, Android, and iOS from one codebase, **Windows desktop first**. What differs per OS lives in exactly two places, which already exist for all five, so later platforms slot in without restructuring:
+
+* **Rust code that differs per OS** lives only in `vpp-platform` (one file per OS: `windows.rs`, `macos.rs`, `linux.rs`, `android.rs`, `ios.rs`) and in the entry-point crates `vpp-desktop`, `vpp-android`, and `vpp-ios`. No other crate contains `#[cfg(target_os = …)]`.
+* **Everything per OS that is not Rust** lives in `platforms/<os>/`: the Android Gradle project, the iOS Xcode project, installers, manifests, icons, and signing.
+
+Only `vpp-viewer` and the entry points depend on `vpp-platform`. Library crates are given folders and services as arguments, so they stay testable on any machine. The viewer has a desktop shell and a mobile shell, chosen by the form factor `vpp-platform` reports. Details and risks: `docs/rust-port.md` §4.1.
 
 ## Invariants
 
@@ -79,12 +92,17 @@ These hold everywhere. A pull request that breaks one is not merged, however use
 | Add a CSS property | `vpp-style` (the `values/` folder and the property table) |
 | Add a `VPP.*` API | `vpp-script/src/bindings/`, plus a design document (`CONTRIBUTING.md`) |
 | Change what the viewer trusts | `vpp-updater`, plus a design document |
-| Change the address bar or window buttons | `vpp-viewer/src/shell.rs` |
+| Change the address bar or window buttons | `vpp-viewer/src/shell.rs`, then `shell/desktop.rs` or `shell/mobile.rs` |
+| Fix something on one OS only | `vpp-platform/src/<os>.rs`, or `platforms/<os>/` if it is not Rust |
+| Build or package for one OS | `platforms/<os>/README.md` |
 | Understand the template syntax | `docs/template-syntax.md` |
 
 ## Further reading
 
 * `README.md`: what VPP is for
 * `docs/rust-port.md`: the port plan, library choices, and C++ → Rust file map
+* `docs/reference/`: how the removed C++ implementation behaved, which the port reproduces
+* `docs/formats/`: byte layouts of the binary formats
+* `platforms/README.md`: what each OS folder holds
 * `docs/versioning.md`: how software, formats, sites, and the API are versioned
 * `CONTRIBUTING.md`: how to build, test, and send a change

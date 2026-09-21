@@ -12,11 +12,11 @@
 //!
 //! # Status
 //!
-//! Not ported yet. The C++ reference implementation is `packager/src/main.cpp`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
+//! Not implemented yet. The removed C++ implementation was `packager/src/main.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`. The planned Rust files are listed in `docs/rust-port.md` §5.3.
 
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    eprintln!("vpppack: not ported to Rust yet; use the C++ build (build.cmd) for now");
+    eprintln!("vpppack: not implemented yet; the Rust port is in progress (docs/rust-port.md)");
     ExitCode::FAILURE
 }

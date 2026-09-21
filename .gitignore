@@ -1,19 +1,13 @@
-# Build output
-build/
-out/
+# Editors
 .vs/
 .vscode/
-CMakeUserPresets.json
 
-# Compiled artifacts
-*.obj
-*.o
-*.exe
-*.pdb
-*.ilk
-*.vpp
-*.bin
+# VPP tool output: compiled pages (vppc), packages and keys (vpppack)
+out/
 dist/
+*.vpp
+*.vppm
+*.bin
 *.key
 *.pub
 

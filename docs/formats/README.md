@@ -4,10 +4,10 @@ One file per binary format, each giving the byte layout of every version still s
 
 | Format | Current version | Specification |
 |---|---|---|
-| `.vpp` page package | 3 | Currently in `packager/README.md`, "The .vpp format". It moves here as `package.md` when `vpp-format` is ported. |
-| `.vppm` update manifest | — | To be written when `vpp-format` is ported |
+| `.vpp` page package | 3 | [package.md](package.md) |
+| `.vppm` update manifest | 3 | [package.md](package.md): the package without its data section |
 | `dom.bin` | — | To be written when `vpp-dom` is ported |
 | `style.bin` | — | To be written when `vpp-style` is ported |
 | `code.bin` | — | To be written when `vpp-script` is ported |
 
-The C++ implementation is the source of truth until each specification is written: `runtime/src/package.cpp` and `runtime/src/binary.cpp`.
+Until a specification is written, the removed C++ implementation is the source of truth: `git show 1d1cd11:runtime/src/binary.cpp` for `dom.bin` and `style.bin`, and `docs/reference/compiler.md` for what they contain.

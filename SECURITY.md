@@ -14,6 +14,8 @@ Include what you can of:
 * the viewer or tool version, and the operating system
 * steps or a file that reproduce it
 
+Reports found or written with AI tools are welcome, but **verify them first**: include a reproduction that you ran yourself. Reports that describe a vulnerability without one are closed.
+
 You will get an answer within 7 days. Once a fix is ready, it is released first and the advisory is published afterwards, crediting you unless you prefer not to be named.
 
 ## In scope

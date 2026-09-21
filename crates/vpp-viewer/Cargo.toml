@@ -1,16 +1,12 @@
 [package]
 name = "vpp-viewer"
-description = "Opens a window, draws the shell (back, forward, reload, address, window buttons), loads and verifies pages, runs them, and navigates between them."
+description = "The whole viewer as a library: the shell (back, forward, reload, address, window buttons), loading and verifying pages, running them, navigating between them, the rendering loop, and input."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license-file.workspace = true
 repository.workspace = true
 publish.workspace = true
-
-[[bin]]
-name = "vpp-viewer"
-path = "src/main.rs"
 
 [dependencies]
 vpp-format.workspace = true
@@ -20,6 +16,7 @@ vpp-layout.workspace = true
 vpp-paint.workspace = true
 vpp-script.workspace = true
 vpp-updater.workspace = true
+vpp-platform.workspace = true
 
 [lints]
 workspace = true

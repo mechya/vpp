@@ -1,0 +1,20 @@
+[package]
+name = "vpp-desktop"
+description = "Starts the viewer on the desktop: reads the command line, creates the window's event loop, and hands it to vpp-viewer."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "vpp-viewer"
+path = "src/main.rs"
+
+[dependencies]
+vpp-viewer.workspace = true
+vpp-platform.workspace = true
+
+[lints]
+workspace = true

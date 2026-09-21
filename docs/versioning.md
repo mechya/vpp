@@ -15,7 +15,7 @@ VPP has several things that change at different speeds. Each has its own version
 
 * **One version for the whole workspace**, set once with `version.workspace = true`. The crates are released together, so there is no matrix of compatible crate versions for anyone to track.
 * **`0.x` until the package format is declared stable.** In `0.x`, a minor bump (`0.4` → `0.5`) may break things and a patch bump may not. `1.0.0` means the package format and `VPP.*` API level 1 are frozen, apart from additive changes.
-* **Releases are git tags** (`v0.4.0`) made from `main`. CI builds the viewer and tools for the three platforms and attaches them to the GitHub release.
+* **Releases are git tags** (`v0.4.0`) made from `main`. CI builds the viewer and tools for each supported platform (Windows first) and attaches them to the GitHub release.
 * **Decision: VPP crates are not published to crates.io.** Every crate sets `publish = false`. The viewer and tools are distributed only as GitHub release binaries and through the source repository. Reasons:
   * A crates.io upload is permanent: a version can be yanked but never deleted.
   * Published crates spread through other projects' dependency trees, where the commercial-use threshold cannot be tracked or enforced.
@@ -35,9 +35,9 @@ The publisher sets a SemVer version in `vpp.json`. The updater refuses any versi
 * **All constants live in `vpp-format/src/version.rs`** with a one-line history comment per version, as `package.cpp` does today (`// 2: page name; 3: window preferences`).
 * **Readers accept a range, writers write one version.** The viewer reads from the oldest supported to the current version, and the tools always write the current one. Dropping support for an old version is a breaking change and is listed in `CHANGELOG.md`.
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
-* **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. `packager/README.md` currently holds this for packages; it moves there.
+* **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
 * **`code.bin` records which engine produced it**, e.g. `quickjs-ng 0.16`, because bytecode is tied to the engine build. On a mismatch the viewer refuses the page with a clear message rather than crashing inside the engine.
-* **During the port**, the Rust code must read and write format version 3 byte for byte as the C++ tools do; that is how the port is proven correct. The first format change after the C++ tree is removed becomes version 4.
+* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 4. JavaScript API level
 

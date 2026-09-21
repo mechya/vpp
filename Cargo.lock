@@ -3,6 +3,14 @@
 version = 4
 
 [[package]]
+name = "vpp-android"
+version = "0.1.0"
+dependencies = [
+ "vpp-platform",
+ "vpp-viewer",
+]
+
+[[package]]
 name = "vpp-compiler"
 version = "0.1.0"
 dependencies = [
@@ -11,6 +19,14 @@ dependencies = [
  "vpp-script",
  "vpp-style",
  "vpp-template",
+]
+
+[[package]]
+name = "vpp-desktop"
+version = "0.1.0"
+dependencies = [
+ "vpp-platform",
+ "vpp-viewer",
 ]
 
 [[package]]
@@ -23,6 +39,14 @@ dependencies = [
 [[package]]
 name = "vpp-format"
 version = "0.1.0"
+
+[[package]]
+name = "vpp-ios"
+version = "0.1.0"
+dependencies = [
+ "vpp-platform",
+ "vpp-viewer",
+]
 
 [[package]]
 name = "vpp-layout"
@@ -45,6 +69,10 @@ version = "0.1.0"
 dependencies = [
  "vpp-layout",
 ]
+
+[[package]]
+name = "vpp-platform"
+version = "0.1.0"
 
 [[package]]
 name = "vpp-script"
@@ -83,6 +111,7 @@ dependencies = [
  "vpp-format",
  "vpp-layout",
  "vpp-paint",
+ "vpp-platform",
  "vpp-script",
  "vpp-style",
  "vpp-updater",
