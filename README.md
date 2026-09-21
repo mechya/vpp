@@ -2,7 +2,7 @@
 
 **VPP (Viewer Package Platform)** is an experimental lightweight web viewer and application platform.
 
-> **VPP is being rewritten in Rust, Windows desktop first.** See [docs/rust-port.md](docs/rust-port.md) for the plan, [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organised, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
+> **Written in Rust. The Windows viewer works today; macOS and Linux are next.** See [docs/rust-port.md](docs/rust-port.md) for the plan, [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organised, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
 
 It combines familiar web technologies with a lightweight native viewer, application runtime, packaging system, secure update mechanism, and development tools.
 
@@ -35,7 +35,7 @@ Verify signature, publisher, and resource hashes
  ↓
 Load resources
  ↓
-Execute compiled JavaScript
+Run the page's JavaScript
  ↓
 Display page
  ↓
@@ -145,7 +145,12 @@ vpp/
 └── docs/                 plan, formats, reference behaviour, design documents
 ```
 
-Build with `cargo build`. The Rust port is in progress, Windows desktop first; see [docs/rust-port.md](docs/rust-port.md).
+Build with `cargo build`, then try an example:
+
+```sh
+cargo run -p vpp-desktop -- examples/hello-world/pages/home.html
+cargo run -p vpp-desktop -- examples/app-window/pages/home.html
+```
 
 ## Components
 
@@ -449,20 +454,17 @@ Debug information should normally remain outside the distributed package.
 
 ## Status
 
-VPP is being rewritten in Rust, Windows desktop first ([docs/rust-port.md](docs/rust-port.md)). The C++ implementation reached the phases below before it was removed (commit `7cf865e`); the Rust port rebuilds them, and [docs/reference/](docs/reference/) describes how each behaved.
+Early and experimental. Works today, on Windows:
 
-Done in the C++ implementation:
+- Viewer: a frameless window with its own shell bar (back, forward, reload, address field, window buttons), Ctrl+L, and per-site window options (theme, hidden bar, size, auto height, rounded corners)
+- Rendering: VPP's own engine for HTML, the CSS cascade, block, inline, and flex layout, text, and inline SVG
+- Scripts: JavaScript on QuickJS with DOM access, click events, `console.log`, and the `VPP.window` API, limited in memory and time
+- Compiler (`vppc`): pages with layouts, includes, and components compiled into `dom.bin`, `style.bin`, and `code.bin`
+- Packager (`vpppack`): `.vpp` packages with per-resource SHA-256 and Ed25519 publisher signatures
+- Security: signature, pinned publisher key, and every hash checked before anything runs
+- Updates: install from any static server by URL, download only changed resources, refuse older versions, run offline from the installed copy
 
-- Phase 1 viewer: frameless native window, own rendering engine (DOM, CSS cascade, block, inline, and flex layout, painting)
-- Phase 2 runtime: JavaScript execution with DOM bindings, events, and the `VPP.window` API
-- Phase 3 compiler: HTML → `dom.bin`, CSS → `style.bin`, JavaScript → `code.bin` with source stripped
-- Phase 4 package: `.vpp` container with manifest and per-resource SHA-256, opened directly by the viewer
-- Phase 5 security: Ed25519 publisher signatures, verification before anything runs, publisher key pinned per application id on first use
-- Phase 6 updates: install from any static server by URL, per-resource incremental downloads, rollback refusal, atomic install, offline fallback
-- Phase 7 sites: one `.vpp` per page, one resource per source file shared by hash, links between pages with history, build-time templates (layouts, slots, includes, components with properties and scoped CSS)
-- Phase 8 shell: the viewer frame as a VPP page with address field, history buttons, window buttons, resize edges, a start page, and per-site window preferences with Ctrl+L override; rounded transparent corners, auto-height windows, and inline SVG icons for sites that draw their own frame
-
-Next: the Rust port to a working Windows viewer, then macOS and Linux, then Android and iOS. After that, the runtime half of the template specification (bindings, events, component scripts), storage, and assets.
+Next: macOS and Linux, then Android and iOS ([docs/rust-port.md](docs/rust-port.md)). After that, the runtime half of the template specification (bindings, events, component scripts), storage, and assets.
 
 Out of scope by design: rendering arbitrary websites. VPP pages target the VPP engine's documented HTML and CSS subset.
 
