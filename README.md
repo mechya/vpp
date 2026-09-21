@@ -6,6 +6,11 @@
 
 It combines familiar web technologies with a lightweight native viewer, application runtime, packaging system, secure update mechanism, and development tools.
 
+<p>
+  <img src="docs/images/hello-world.png" alt="The hello-world example in the VPP viewer, with the viewer's own bar" width="49%">
+  <img src="docs/images/app-window.png" alt="The app-window example: no viewer bar, the site draws its own window buttons" width="49%">
+</p>
+
 ## Core Idea
 
 **One `.vpp` file is one page.** A VPP application, or site, is a folder of page packages that link to each other, the way web pages link to each other.
