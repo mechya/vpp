@@ -179,7 +179,7 @@ Execution environment used by VPP applications.
 
 Responsibilities include:
 
-- JavaScript binary execution
+- JavaScript execution on QuickJS, from source
 - DOM interaction
 - application lifecycle
 - event handling
@@ -295,7 +295,7 @@ home.vpp
 │
 ├── dom.bin        the finished page, layout and components expanded
 ├── style.bin      the page's stylesheets, parsed
-├── code.bin       the page's scripts, compiled
+├── code.bin       the page's scripts: JavaScript source, syntax-checked
 └── assets.bin     images and fonts (planned)
 ```
 
@@ -431,8 +431,8 @@ Debug information should normally remain outside the distributed package.
 
 ### Phase 3 — Compiler
 
-- JavaScript compiler integration
-- Binary JavaScript representation
+- JavaScript syntax check at build time
+- Scripts packed as source in `code.bin`
 - Debug mapping
 
 ### Phase 4 — Package
