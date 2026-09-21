@@ -1,0 +1,41 @@
+# cargo-deny: licences, bans, advisories, and sources of every dependency.
+# Run locally with `cargo deny check`. CI runs it on every pull request.
+
+[graph]
+all-features = true
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+# Permissive licences only (CONTRIBUTING.md, "Dependencies").
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "CC0-1.0",
+]
+confidence-threshold = 0.9
+unused-allowed-license = "allow"
+
+# VPP's own crates are under the VPP Source-Available License and are never
+# published, so they are not checked against the list above.
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+deny = [
+    { crate = "openssl-sys", reason = "use rustls; no OpenSSL dependency" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

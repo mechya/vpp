@@ -16,3 +16,9 @@ CMakeUserPresets.json
 dist/
 *.key
 *.pub
+
+# Rust
+/target/
+
+# Test fixtures are real packages and keys, kept on purpose
+!tests/fixtures/**

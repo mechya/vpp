@@ -1,0 +1,6 @@
+# Everyone builds with the same Rust. rustup installs this version automatically.
+# The minimum supported version is `rust-version` in Cargo.toml; CI checks both.
+[toolchain]
+channel = "1.98.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

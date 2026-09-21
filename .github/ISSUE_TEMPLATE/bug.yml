@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in the viewer or the tools does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems go to SECURITY.md, not here. For a page that renders differently from a browser, use the "Rendering differs" form instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps, a command, or a `.vpp` file or example page that shows it (attach if you can share it).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: VPP version
+      description: The viewer or tool version, or the commit if built from source.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows, macOS, Linux, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Error output
+      description: Any messages the viewer or tool printed.
+      render: text

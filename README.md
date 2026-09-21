@@ -2,6 +2,8 @@
 
 **VPP (Viewer Package Platform)** is an experimental lightweight web viewer and application platform.
 
+> **VPP is being ported from C++ to Rust.** See [docs/rust-port.md](docs/rust-port.md) for the plan, [ARCHITECTURE.md](ARCHITECTURE.md) for how the code is organised, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
+
 It combines familiar web technologies with a lightweight native viewer, application runtime, packaging system, secure update mechanism, and development tools.
 
 ## Core Idea

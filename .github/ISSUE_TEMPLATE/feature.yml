@@ -1,0 +1,25 @@
+name: Feature request
+description: Something VPP should do that it does not do today.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Format changes, new `VPP.*` APIs, and changes to signing, trust, or updates need a design document before code (CONTRIBUTING.md, section 6). This issue can be where that discussion starts.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do, and why VPP makes it hard today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you would like VPP to do. An example page or API sketch helps.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds you have tried, or other ways to solve it.

@@ -1,0 +1,16 @@
+[package]
+name = "vpp-style"
+description = "Parses stylesheets (tokenising with cssparser), encodes them as style.bin, matches selectors, runs the cascade, and produces a computed style for every element."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+vpp-format.workspace = true
+vpp-dom.workspace = true
+
+[lints]
+workspace = true

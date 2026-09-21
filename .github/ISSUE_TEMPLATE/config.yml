@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/mechya/vpp/security/advisories/new
+    about: Report privately. Never in a public issue (SECURITY.md).
+  - name: Commercial licensing
+    url: https://github.com/mechya/vpp/blob/main/COMMERCIAL-LICENSING.md
+    about: Questions about using VPP commercially.

@@ -1,0 +1,15 @@
+[package]
+name = "vpp-dom"
+description = "Holds a page as an arena of nodes linked by generational ids, parses HTML into it with html5ever, and encodes it as dom.bin."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+vpp-format.workspace = true
+
+[lints]
+workspace = true

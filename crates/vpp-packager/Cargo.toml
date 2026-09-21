@@ -1,0 +1,19 @@
+[package]
+name = "vpp-packager"
+description = "Creates publisher keys, and hashes, signs, and publishes compiled pages as .vpp packages, .vppm manifests, and a shared res/ folder."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "vpppack"
+path = "src/main.rs"
+
+[dependencies]
+vpp-format.workspace = true
+
+[lints]
+workspace = true

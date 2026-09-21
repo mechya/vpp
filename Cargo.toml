@@ -1,0 +1,40 @@
+# VPP workspace. See ARCHITECTURE.md for what each crate does and
+# docs/rust-port.md for the plan this layout follows.
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+# Every crate shares one version and releases together (docs/versioning.md).
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license-file = "LICENSE.md"
+repository = "https://github.com/mechya/vpp"
+# VPP crates are never published to crates.io (docs/rust-port.md §6.1).
+publish = false
+
+# Crates depend on each other through these entries, so paths live in one place.
+# Third-party versions are added here too as the port needs them.
+[workspace.dependencies]
+vpp-format = { path = "crates/vpp-format" }
+vpp-template = { path = "crates/vpp-template" }
+vpp-dom = { path = "crates/vpp-dom" }
+vpp-style = { path = "crates/vpp-style" }
+vpp-layout = { path = "crates/vpp-layout" }
+vpp-paint = { path = "crates/vpp-paint" }
+vpp-script = { path = "crates/vpp-script" }
+vpp-updater = { path = "crates/vpp-updater" }
+
+# Every crate opts in with `[lints] workspace = true`.
+[workspace.lints.rust]
+# vpp-script is the only crate that may need unsafe code, at the JavaScript
+# engine boundary. When it does, it gets its own [lints] table with
+# unsafe_code = "deny" and a // SAFETY: comment on each use.
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"

@@ -1,0 +1,15 @@
+[package]
+name = "vpp-paint"
+description = "Builds a display list from laid-out boxes and rasterises it into a pixel buffer with tiny-skia, text with swash, and SVG with resvg."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+vpp-layout.workspace = true
+
+[lints]
+workspace = true

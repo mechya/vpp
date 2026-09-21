@@ -1,0 +1,15 @@
+[package]
+name = "vpp-script"
+description = "Runs a page's compiled scripts through the ScriptEngine trait, with rquickjs as the engine, and exposes the DOM, console, and the VPP.* APIs to them."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+vpp-dom.workspace = true
+
+[lints]
+workspace = true

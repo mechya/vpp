@@ -1,0 +1,23 @@
+[package]
+name = "vpp-compiler"
+description = "Compiles a page and its layouts, components, CSS, and JavaScript into dom.bin, style.bin, and code.bin."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "vppc"
+path = "src/main.rs"
+
+[dependencies]
+vpp-format.workspace = true
+vpp-template.workspace = true
+vpp-dom.workspace = true
+vpp-style.workspace = true
+vpp-script.workspace = true
+
+[lints]
+workspace = true

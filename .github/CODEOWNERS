@@ -1,0 +1,13 @@
+# Who reviews what (GOVERNANCE.md). The last matching line wins.
+# Area maintainers are added per crate as the project gains them, for example:
+#   /crates/vpp-style/    @mechya @area-maintainer
+# Security-sensitive paths stay with the lead maintainer only.
+
+*                           @mechya
+
+/crates/vpp-format/         @mechya
+/crates/vpp-updater/        @mechya
+/CLA.md                     @mechya
+/LICENSE.md                 @mechya
+/GOVERNANCE.md              @mechya
+/.github/                   @mechya

@@ -1,0 +1,33 @@
+name: Rendering differs from browsers
+description: HTML or CSS that VPP draws differently from Chrome, Firefox, or Safari.
+labels: [rendering]
+body:
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Smallest HTML and CSS that shows it
+      description: Cut the page down until removing anything more makes the difference go away.
+      render: html
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What browsers show
+      description: A screenshot, and which browser.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What VPP shows
+      description: A screenshot.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: VPP version
+      description: The viewer version, or the commit if built from source.
+    validations:
+      required: true
