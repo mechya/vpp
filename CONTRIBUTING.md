@@ -1,6 +1,6 @@
 # Contributing to VPP
 
-Thank you for helping. This page covers the agreement you sign, how to build and test, how code is laid out, what a pull request needs, and how to use AI tools (section 10).
+Thank you for helping. This page covers the agreement you sign, how to build and test, how code is laid out, what a pull request needs, how to use AI tools (section 10), and what to do when correct code looks suspicious (section 11).
 
 ## 1. Contributor License Agreement
 
@@ -131,3 +131,34 @@ A pull request that is large, untested, or not understood by its author is close
 ### Licensing
 
 The CLA (section 1) applies as usual: you confirm you have the right to submit the change. AI tools sometimes reproduce code from other projects. If you recognise code from elsewhere, say where it came from; it is only accepted if its licence is on the allow list in `deny.toml`.
+
+## 11. Code that looks suspicious but is intentional
+
+Some correct code looks buggy or malicious. VPP will have plenty of it:
+
+| Looks like | Actually |
+|---|---|
+| Truncated, oversized, or corrupt packages | Tests proving decoders refuse hostile files (`ARCHITECTURE.md`, invariant 7) |
+| A flag that skips signature checks | `--allow-unsigned`, a development flag that warns on every use |
+| A private key committed to the repository | The public test key for fixtures, which never signs anything real |
+| `unsafe` code | Calls into the JavaScript engine or Android and Apple APIs |
+| Network access, writing files | The updater's job |
+| Right-to-left control characters | Testing Arabic and Hebrew text layout |
+
+That is fine. The rule is **explain it, isolate it, and never let the explanation replace review**:
+
+1. **Say so in the pull request description, before a reviewer finds it:** "`tests/decoder.rs` builds a package with a count of 2³², to prove the decoder refuses it."
+2. **Label it at the exact spot** with an `INTENTIONAL:` comment giving the reason and a link, the way `unsafe` gets a `// SAFETY:` comment:
+
+   ```rust
+   // INTENTIONAL: hostile input. The count claims 2^32 entries; decoding must fail, not allocate. See #42.
+   ```
+
+3. **Keep it in the lowest-risk place that works:**
+   - hostile inputs only in tests, under `#[cfg(test)]` or in a test folder, never in code that ships
+   - development switches clearly named, off by default, and printing a warning every time they are used
+   - test keys and secrets labelled as test-only in the file itself
+4. **Write invisible characters as escapes in code,** for example `"\u{2067}"` in Rust, so reviewers can see them. A data file that must contain the raw characters, such as a right-to-left test page, is added by the lead maintainer to `.github/hidden-characters-allowlist`, one exact path with a reason. The CI check skips only those files.
+5. **Anything in `AGENTS.md` section 2 still needs approval first,** or a design document, however good the reason.
+
+**An `INTENTIONAL:` label explains; it never exempts.** Anyone can write one, including someone hiding something. Reviewers still check that the reason is true (`docs/review-checklist.md`, section 4).

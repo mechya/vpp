@@ -65,9 +65,19 @@ Assume good faith, but check. A harmful change usually looks harmless. Look hard
 * [ ] Binary files are expected. **Fixtures in `tests/fixtures/` are never edited**; a new format version adds a new folder.
 * [ ] No very long lines or deeply indented code that pushes something out of view.
 
+**Intentional exceptions**
+
+Correct code sometimes looks like an attack: hostile test inputs, development switches, test keys, `unsafe`, right-to-left characters (`CONTRIBUTING.md`, section 11). A label changes the question from "is this a mistake?" to "is this reason true?". It never skips the check.
+
+* [ ] Suspicious-looking code is announced in the description and labelled `INTENTIONAL:` at the spot. Unannounced code of this kind is a finding in itself.
+* [ ] **The reason holds.** Hostile inputs are only reachable from tests. Development switches are off by default and warn when used. Test keys sign only fixtures. Network or file access is what the crate is for.
+* [ ] **It is in the lowest-risk place that works.** Ask for it to move if a test-only path could be reached from shipped code, or if a switch could be turned on by a page, a package, or a server.
+* [ ] **Invisible characters are escapes in code.** Any change to `.github/hidden-characters-allowlist` adds only exact data-file paths, each with a reason, and comes from the lead maintainer.
+* [ ] **Look at the rest of the pull request as hard as the labelled part.** A convincing label next to harmful code elsewhere is a classic pattern.
+
 **Project files**
 
-* [ ] Changes to `LICENSE.md`, `CLA.md`, `GOVERNANCE.md`, `SECURITY.md`, `CODEOWNERS`, `AGENTS.md`, or this checklist come only from the lead maintainer, or with their explicit approval.
+* [ ] Changes to `LICENSE.md`, `CLA.md`, `GOVERNANCE.md`, `SECURITY.md`, `CODEOWNERS`, `AGENTS.md`, `.github/hidden-characters-allowlist`, or this checklist come only from the lead maintainer, or with their explicit approval.
 
 ## 5. Finishing the review
 

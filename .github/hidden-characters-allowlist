@@ -1,0 +1,10 @@
+# Files allowed to contain raw zero-width or direction-changing Unicode characters.
+#
+# The "Hidden characters" CI job refuses these characters everywhere else.
+# In source code, write them as escapes instead (for example "\u{2067}" in Rust),
+# so reviewers can see them. Only data files that must contain the raw
+# characters, such as right-to-left text-layout test pages, belong here.
+#
+# One exact path per line, relative to the repository root. No directories or
+# wildcards. Only the lead maintainer changes this file (CODEOWNERS), and every
+# entry needs a comment saying why.

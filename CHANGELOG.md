@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 - `platforms/` with a folder per operating system (Windows now; macOS, Linux, Android, iOS later), and `vpp-platform` with one source file per OS.
 - `docs/formats/package.md`, the `.vpp` and `.vppm` byte layout (version 3), and `docs/reference/`, how the C++ tools behaved.
 - Rules for AI-assisted contributions: `AGENTS.md` (read by AI coding tools; `CLAUDE.md` points to it), `CONTRIBUTING.md` section 10, `docs/review-checklist.md`, an AI section in the pull request template, and a CI check for hidden Unicode characters.
+- Rules for correct code that looks suspicious: `INTENTIONAL:` labels (`CONTRIBUTING.md` section 11), reviewer checks, and `.github/hidden-characters-allowlist` for data files that must contain right-to-left or zero-width characters.
 - Project files for contributors: `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, and `docs/versioning.md`.
 
 ### Removed

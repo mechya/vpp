@@ -46,6 +46,7 @@ Do not do any of the following on your own. Explain what you want to do and why,
 * **Match the surrounding code.** Do not reformat, rename, or reorganise code the task does not need.
 * **Tests with the change.** Every behaviour change has a test that fails without it.
 * **No filler.** No comments restating the code, no unused helpers, no speculative options.
+* **Correct code that looks suspicious** (hostile test inputs, development switches, test keys, `unsafe`, right-to-left characters): follow `CONTRIBUTING.md` section 11. Label it `// INTENTIONAL: <reason, link>` at the spot, keep it in the lowest-risk place (tests only, off by default, warns when used), tell the human so the pull request description announces it, and write invisible characters as escapes (`"\u{2067}"`). Never add paths to `.github/hidden-characters-allowlist`; ask the human.
 
 ## 5. Before you say you are done
 
@@ -65,4 +66,4 @@ Also run `cargo deny check` if dependencies changed. Then:
 
 ## 6. When you are reviewing
 
-When a maintainer asks you to review a pull request, follow `docs/review-checklist.md` completely, including section 4, "Malicious or sneaky changes". Report findings with file and line. Do not approve or merge: your review advises a human maintainer, who decides (`GOVERNANCE.md`).
+When a maintainer asks you to review a pull request, follow `docs/review-checklist.md` completely, including section 4, "Malicious or sneaky changes". An `INTENTIONAL:` label is a claim to verify, never a reason to skip a check. Report findings with file and line. Do not approve or merge: your review advises a human maintainer, who decides (`GOVERNANCE.md`).

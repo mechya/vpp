@@ -27,17 +27,28 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       # Zero-width and text-direction characters can make code read differently
-      # from how it runs ("Trojan Source"). None belong in this repository.
+      # from how it runs ("Trojan Source"). In source code they are written as
+      # escapes. Data files that must contain them are listed, one exact path
+      # each, in .github/hidden-characters-allowlist (lead maintainer only).
       - name: Refuse zero-width and direction-changing characters
         env:
           LC_ALL: C.UTF-8
         run: |
           found=$(git ls-files -z | xargs -0 grep -lIP '[\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{202A}-\x{202E}\x{2066}-\x{2069}]' || true)
+          allowlist=.github/hidden-characters-allowlist
+          allowed=$(tr -d '\r' < "$allowlist" | grep -v '^[[:space:]]*#' | sed 's/[[:space:]]*#.*$//; /^[[:space:]]*$/d' || true)
+          if [ -n "$found" ] && [ -n "$allowed" ]; then
+            echo "Allowed by $allowlist:"
+            printf '%s\n' "$found" | grep -xF -f <(printf '%s\n' "$allowed") || true
+            found=$(printf '%s\n' "$found" | grep -vxF -f <(printf '%s\n' "$allowed") || true)
+          fi
           if [ -n "$found" ]; then
             echo "::error::Hidden or direction-changing Unicode characters in:"
             echo "$found"
+            echo "Write them as escapes (for example \u{2067}), or ask the lead maintainer to add a data file to $allowlist."
             exit 1
           fi
+          echo "No hidden characters outside the allowlist."
 
   test:
     name: Clippy and tests (${{ matrix.os }})
