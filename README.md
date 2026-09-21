@@ -481,7 +481,7 @@ Contributions are welcome: bug reports, examples, documentation, and code. Start
 
 ## License
 
-**VPP — Viewer Package Platform** is source-available software under the VPP Source-Available License 1.0. See [LICENSE.md](LICENSE.md). The licence text is a draft pending legal review; the placeholders for the copyright holder, effective date, contact, and jurisdiction are still to be filled in.
+**VPP — Viewer Package Platform** is source-available software under the VPP Source-Available License 1.0. See [LICENSE.md](LICENSE.md). The licence has not yet been reviewed by a lawyer.
 
 ### Free Use
 

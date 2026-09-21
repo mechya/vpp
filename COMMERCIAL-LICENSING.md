@@ -1,7 +1,7 @@
 # VPP Commercial Licensing Policy
 
 **Project:** VPP — Viewer Package Platform  
-**Commercial Licensing Contact:** gurungb323@gmail.com
+**Commercial Licensing Contact:** vppdev.contact@gmail.com
 
 This document describes the intended standard annual commercial pricing for VPP.
 
@@ -98,5 +98,5 @@ Changes do not retroactively alter an already signed commercial agreement for it
 
 ## Contact
 
-Commercial licensing: **gurungb323@gmail.com**  
+Commercial licensing: **vppdev.contact@gmail.com**  
 Project website: **https://github.com/mechya/vpp**

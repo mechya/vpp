@@ -4,7 +4,7 @@
 **Status:** Draft for legal review before publication  
 **Effective Date:** 16 September 2026  
 **Copyright Holder / Licensor:** Gurung Bhupesh  
-**Commercial Licensing Contact:** gurungb323@gmail.com  
+**Commercial Licensing Contact:** vppdev.contact@gmail.com  
 **Governing Law / Jurisdiction:** Japan
 
 > **Plain-language summary — not legally binding**
@@ -246,7 +246,7 @@ This is a custom source-available license and should not be described as OSI-app
 
 ## 25. Contact
 
-Commercial licensing: **gurungb323@gmail.com**  
+Commercial licensing: **vppdev.contact@gmail.com**  
 Project website: **https://github.com/mechya/vpp**
 
 **© 2026 Gurung Bhupesh. All rights reserved except as expressly granted by this License.**

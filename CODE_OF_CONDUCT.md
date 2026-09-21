@@ -7,7 +7,7 @@ In short: be respectful and constructive, assume good intent, and focus criticis
 
 ## Reporting
 
-Report conduct problems privately to the lead maintainer, Gurung Bhupesh, at **gurungb323@gmail.com**. Reports are kept confidential.
+Report conduct problems privately to the lead maintainer, Gurung Bhupesh, at **vppdev.contact@gmail.com**. Reports are kept confidential.
 
 If the report concerns the lead maintainer, say so in the subject line. It will be handled by an area maintainer instead, once the project has any.
 
