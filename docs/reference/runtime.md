@@ -1,6 +1,6 @@
 # VPP Runtime — Viewer Package Platform
 
-> **Reference specification.** This page describes how the C++ runtime behaved before it was removed (last present in commit `1d1cd11`; read its source with `git show 1d1cd11:runtime/src/`). The Rust port in `crates/vpp-dom, vpp-style, vpp-layout, vpp-paint, and vpp-script` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
+> **Reference specification.** This page describes how the C++ runtime behaved before it was removed (last present in commit `7cf865e`; read its source with `git show 7cf865e:runtime/src/`). The Rust port in `crates/vpp-dom, vpp-style, vpp-layout, vpp-paint, and vpp-script` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
 
 **VPP Runtime** is the engine of **VPP — Viewer Package Platform**: the DOM, CSS, layout, painting, and the JavaScript bindings that VPP applications run on.
 

@@ -1,7 +1,7 @@
 # `dom.bin`: a finished page's tree
 
 **Current version:** 1
-**Implementation:** `crates/vpp-dom/src/binary.rs`. The layout came from the C++ implementation removed after commit `1d1cd11` (`git show 1d1cd11:runtime/src/binary.cpp`), and the Rust compiler reproduces its output byte for byte.
+**Implementation:** `crates/vpp-dom/src/binary.rs`. The layout came from the C++ implementation removed after commit `7cf865e` (`git show 7cf865e:runtime/src/binary.cpp`), and the Rust compiler reproduces its output byte for byte.
 
 The compiler writes one `dom.bin` per page, with every template already expanded. The viewer loads it without an HTML parser. Primitives (`u8`, `u16`, `u32`, `str`) and decoder limits are the same as in [package.md](package.md).
 

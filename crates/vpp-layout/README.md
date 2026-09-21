@@ -12,7 +12,7 @@ Turns styled elements into positioned boxes. Block, flex, and grid come from `ta
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, step 5b). It replaces the C++ `runtime/src/layout.cpp` (`git show 1d1cd11:<path>`). Differences are listed in `docs/reference/runtime.md`.
+Implemented (`docs/rust-port.md` §8, step 5b). It replaces the C++ `runtime/src/layout.cpp` (`git show 7cf865e:<path>`). Differences are listed in `docs/reference/runtime.md`.
 
 | File | Holds |
 |---|---|

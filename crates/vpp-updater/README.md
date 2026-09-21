@@ -12,7 +12,7 @@ Keeps visited pages on disk, pins each site's publisher key on first use, checks
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, step 4). It replaces the C++ `updater/src/updater.cpp`, `http.cpp`, and the publisher-trust part of `viewer/src/main.cpp` (`git show 1d1cd11:<path>`). Differences are listed in `docs/reference/updater.md`.
+Implemented (`docs/rust-port.md` §8, step 4). It replaces the C++ `updater/src/updater.cpp`, `http.cpp`, and the publisher-trust part of `viewer/src/main.cpp` (`git show 7cf865e:<path>`). Differences are listed in `docs/reference/updater.md`.
 
 | File | Holds |
 |---|---|

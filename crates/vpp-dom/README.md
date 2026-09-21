@@ -12,7 +12,7 @@ Holds a page as an arena of nodes linked by generational ids, parses HTML into i
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/dom.cpp`, `html.cpp`, and the `dom.bin` half of `binary.cpp` (`git show 1d1cd11:<path>`).
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/dom.cpp`, `html.cpp`, and the `dom.bin` half of `binary.cpp` (`git show 7cf865e:<path>`).
 
 | File | Holds |
 |---|---|

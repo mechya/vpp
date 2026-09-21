@@ -11,7 +11,7 @@ Read these in order, and re-read the relevant parts before each task:
 1. `ARCHITECTURE.md`: the pipeline, the crate table, the platform rules, and the **invariants that must never break**.
 2. `CONTRIBUTING.md`: the file and code rules (section 4) and the pull request checklist (section 5).
 3. The `README.md` and `src/lib.rs` doc comment of every crate you will touch.
-4. For behaviour: `docs/reference/` (how the tools behaved), `docs/formats/` (byte layouts), and `docs/template-syntax.md`. For the removed C++ code: `git show 1d1cd11:<path>`.
+4. For behaviour: `docs/reference/` (how the tools behaved), `docs/formats/` (byte layouts), and `docs/template-syntax.md`. For the removed C++ code: `git show 7cf865e:<path>`.
 5. For versioning: `docs/versioning.md`, before touching any binary format or `VPP.*` API.
 
 If these documents do not answer a question, **ask the human**. Do not guess at behaviour, invent an API, or cite a specification section you have not checked.

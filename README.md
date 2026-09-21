@@ -449,7 +449,7 @@ Debug information should normally remain outside the distributed package.
 
 ## Status
 
-VPP is being rewritten in Rust, Windows desktop first ([docs/rust-port.md](docs/rust-port.md)). The C++ implementation reached the phases below before it was removed (commit `1d1cd11`); the Rust port rebuilds them, and [docs/reference/](docs/reference/) describes how each behaved.
+VPP is being rewritten in Rust, Windows desktop first ([docs/rust-port.md](docs/rust-port.md)). The C++ implementation reached the phases below before it was removed (commit `7cf865e`); the Rust port rebuilds them, and [docs/reference/](docs/reference/) describes how each behaved.
 
 Done in the C++ implementation:
 

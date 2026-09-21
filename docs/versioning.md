@@ -37,7 +37,7 @@ The publisher sets a SemVer version in `vpp.json`. The updater refuses any versi
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
 * **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
 * **`code.bin` holds JavaScript source, not bytecode** (`docs/design/0001-code-bin.md`), so pages do not depend on the viewer's engine version.
-* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
+* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `7cf865e`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 4. JavaScript API level
 

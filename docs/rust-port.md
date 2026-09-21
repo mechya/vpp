@@ -3,7 +3,7 @@
 ## Rust Port Plan
 
 **Status:** In progress. Step 1 (repository scaffolding) is done, and the C++ implementation has been removed; see §8. **Windows desktop comes first**; macOS, Linux, Android, and iOS follow (§4.1).
-**Replaces:** the C++17 / CMake implementation (about 6,200 lines), removed after commit `1d1cd11`. Read any of it with `git show 1d1cd11:<path>`; its behaviour is described in `docs/reference/`.
+**Replaces:** the C++17 / CMake implementation (about 6,200 lines), removed after commit `7cf865e`. Read any of it with `git show 7cf865e:<path>`; its behaviour is described in `docs/reference/`.
 **Purpose:** Record how the Rust version is built, laid out, versioned, and opened to contributors, so these choices are made once and not re-argued in every pull request.
 
 Sections 5 to 7 were drafts of `ARCHITECTURE.md`, `docs/versioning.md`, `CONTRIBUTING.md`, and `GOVERNANCE.md`, which now exist. Where they differ from this plan, those files win.
@@ -210,7 +210,7 @@ A **mobile spike** checks all four at the start of step 9 (§8): a window on And
 
 ## 5.3 File map: C++ to Rust
 
-This table is the checklist for the port. The tracking issue has one checkbox per row, and each row is a good first or second contribution. The C++ files are gone from the tree; read one with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/`.
+This table is the checklist for the port. The tracking issue has one checkbox per row, and each row is a good first or second contribution. The C++ files are gone from the tree; read one with `git show 7cf865e:<path>`, and its behaviour in `docs/reference/`.
 
 | Removed C++ file | Rust file(s) | Notes |
 |---|---|---|
@@ -282,7 +282,7 @@ This is unchanged from today. The publisher sets a SemVer version in `vpp.json`.
 * **Every supported version has a fixture** in `tests/fixtures/`, and CI checks that each one still loads. A format bump without a new fixture fails review.
 * **Each format has a specification** in `docs/formats/<name>.md` with the byte layout per version. The package format's is `docs/formats/package.md`.
 * **`code.bin` holds JavaScript source, not bytecode** (`docs/design/0001-code-bin.md`). Loading bytecode from a publisher would let a hostile one attack the engine, and bytecode is tied to one engine build. The viewer compiles the source itself.
-* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `1d1cd11`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
+* **During the port**, the Rust code implements format version 3 exactly as `docs/formats/package.md` specifies it, taken from the removed C++ implementation (commit `7cf865e`). There are no C++-built fixtures: the first fixtures are written by the Rust packager, checked against the specification, and then frozen. The first format change after that becomes version 4.
 
 ## 6.4 JavaScript API level
 
@@ -383,7 +383,7 @@ A design document states the problem, the proposal, the alternatives considered,
 
 * **Labels:** `good first issue`, `help wanted`, `area/<crate>`, `needs-design`, `format-change`.
 * **Step-by-step guides** in `docs/guides/` for the most common changes: *adding a CSS property*, *adding a `VPP.*` API method*, *adding a template feature*. Each lists the exact files to touch, following the file map in §5.3.
-* **The port itself is the on-ramp.** One tracking issue, with one checkbox per row of §5.3. Most rows are self-contained, with the removed C++ file (`git show 1d1cd11:<path>`) and its behaviour in `docs/reference/` to work from.
+* **The port itself is the on-ramp.** One tracking issue, with one checkbox per row of §5.3. Most rows are self-contained, with the removed C++ file (`git show 7cf865e:<path>`) and its behaviour in `docs/reference/` to work from.
 * **Examples double as tests.** A contributor can add a page to `examples/` that shows a bug. CI compiles and packages it, and screenshot tests catch regressions.
 
 ## 7.7 Code and dependency rules
@@ -399,7 +399,7 @@ A design document states the problem, the proposal, the alternatives considered,
 
 Each step ends with something testable. The C++ implementation was removed after step 1, so tests check the Rust code against the written specifications (`docs/formats/`, `docs/reference/`) instead of against C++ output.
 
-1. **Repository scaffolding** *(done)*: workspace, toolchain pin, lints, CI, `deny.toml`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `SECURITY.md`, the crate skeletons, `platforms/`, and the removal of the C++ tree (last in commit `1d1cd11`). Still to do on GitHub: the CLA Assistant check, the `main` rulesets, and the tracking issue. Contributors can join once the CLA check is live (§7.1).
+1. **Repository scaffolding** *(done)*: workspace, toolchain pin, lints, CI, `deny.toml`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CLA.md`, `GOVERNANCE.md`, `CHANGELOG.md`, `SECURITY.md`, the crate skeletons, `platforms/`, and the removal of the C++ tree (last in commit `7cf865e`). Still to do on GitHub: the CLA Assistant check, the `main` rulesets, and the tracking issue. Contributors can join once the CLA check is live (§7.1).
 2. **`vpp-format`** *(done)*: byte reader and writer, packages, manifests, keys, and `version.rs`. The `code.bin` container moved to `vpp-script`. Test: round trips, signing and verification, every check in `docs/formats/package.md`, and hostile inputs (truncated, oversized, duplicated names). The first fixtures are written here and frozen.
 3. **Tools** *(done)*: `vpp-packager`; then, brought forward from step 5 because the compiler needs them, the DOM with HTML parsing and `dom.bin` (`vpp-dom`) and CSS parsing with `style.bin` (`vpp-style`); then `vpp-template` and `vpp-compiler`. Test: one unit test per template rule; both `examples/` compile, package, sign, and verify, and their `dom.bin` and `style.bin` are byte for byte what the C++ tools wrote (same SHA-256 as `docs/reference/updater.md` lists). Scripts are checked for syntax with QuickJS and shipped as source in `code.bin` (`docs/design/0001-code-bin.md`); the minimum Rust version rose to 1.87 for `rquickjs`.
 4. **`vpp-updater`** *(done)*, including trust moved out of the viewer. Test: a local static server with two versions of a site; only changed resources are downloaded, rollback is refused, and a changed publisher key is refused.

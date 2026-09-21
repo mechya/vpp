@@ -12,7 +12,7 @@ Gives the viewer one API for what differs per operating system: data, cache, and
 
 ## Status
 
-Windows works: `data_dir()` is `%LOCALAPPDATA%\VPP\Viewer`, `font_candidates()` lists Segoe UI, then Arial, and `clipboard_text()` reads the clipboard through `arboard` (`src/windows.rs`). `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders that find nothing yet. The removed C++ viewer kept its folders in `prefDir` (`git show 1d1cd11:viewer/src/main.cpp`).
+Windows works: `data_dir()` is `%LOCALAPPDATA%\VPP\Viewer`, `font_candidates()` lists Segoe UI, then Arial, and `clipboard_text()` reads the clipboard through `arboard` (`src/windows.rs`). `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders that find nothing yet. The removed C++ viewer kept its folders in `prefDir` (`git show 7cf865e:viewer/src/main.cpp`).
 
 ## Test it on its own
 

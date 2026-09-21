@@ -16,7 +16,7 @@
 //!
 //! # Status
 //!
-//! Works on Windows through `vpp-desktop` (`docs/rust-port.md` §8, step 7), with the shell bar, the address field, and the `vpp.json` window options. The removed C++ implementation was `viewer/src/main.cpp` and `viewer/src/shell.cpp`; read it with `git show 1d1cd11:<path>`, and its behaviour in `docs/reference/viewer.md`.
+//! Works on Windows through `vpp-desktop` (`docs/rust-port.md` §8, step 7), with the shell bar, the address field, and the `vpp.json` window options. The removed C++ implementation was `viewer/src/main.cpp` and `viewer/src/shell.cpp`; read it with `git show 7cf865e:<path>`, and its behaviour in `docs/reference/viewer.md`.
 
 mod app;
 mod input;

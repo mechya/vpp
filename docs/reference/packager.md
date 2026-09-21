@@ -1,6 +1,6 @@
 # VPP Packager — Viewer Package Platform
 
-> **Reference specification.** This page describes how the C++ packager behaved before it was removed (last present in commit `1d1cd11`; read its source with `git show 1d1cd11:packager/src/main.cpp`). The Rust port in `crates/vpp-packager` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
+> **Reference specification.** This page describes how the C++ packager behaved before it was removed (last present in commit `7cf865e`; read its source with `git show 7cf865e:packager/src/main.cpp`). The Rust port in `crates/vpp-packager` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
 
 **VPP Packager** is the packaging and signing component of **VPP — Viewer Package Platform**.
 

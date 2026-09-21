@@ -1,6 +1,6 @@
 # Reference specifications
 
-How the C++ implementation of VPP behaved, kept as the specification for the Rust port. The C++ source was removed after commit `1d1cd11`; read any file with `git show 1d1cd11:<path>`, for example `git show 1d1cd11:runtime/src/layout.cpp`.
+How the C++ implementation of VPP behaved, kept as the specification for the Rust port. The C++ source was removed after commit `7cf865e`; read any file with `git show 7cf865e:<path>`, for example `git show 7cf865e:runtime/src/layout.cpp`.
 
 | Page | Describes | Ported to |
 |---|---|---|

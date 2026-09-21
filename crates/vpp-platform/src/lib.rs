@@ -12,7 +12,7 @@
 //!
 //! # Status
 //!
-//! Windows works: the data folder, the system fonts, and reading the clipboard (`windows.rs`). `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders that find nothing yet. The removed C++ viewer kept its folders in `prefDir` (`git show 1d1cd11:viewer/src/main.cpp`).
+//! Windows works: the data folder, the system fonts, and reading the clipboard (`windows.rs`). `macos.rs`, `linux.rs`, `android.rs`, and `ios.rs` are placeholders that find nothing yet. The removed C++ viewer kept its folders in `prefDir` (`git show 7cf865e:viewer/src/main.cpp`).
 
 use std::path::PathBuf;
 

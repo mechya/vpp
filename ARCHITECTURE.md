@@ -2,7 +2,7 @@
 
 Start here. This page is the map of VPP: what happens to a page from source to screen, which crate does each part, and the rules that must never break. It names files and types but not line numbers, which go stale.
 
-> **The port is in progress.** VPP is being rewritten in Rust (`docs/rust-port.md`), Windows desktop first. The C++ implementation was removed after commit `1d1cd11`; `docs/reference/` describes how it behaved, and each crate's README names the C++ files it replaces. Until a crate is written, nothing in it runs yet.
+> **The port is in progress.** VPP is being rewritten in Rust (`docs/rust-port.md`), Windows desktop first. The C++ implementation was removed after commit `7cf865e`; `docs/reference/` describes how it behaved, and each crate's README names the C++ files it replaces. Until a crate is written, nothing in it runs yet.
 
 ## From source to screen
 

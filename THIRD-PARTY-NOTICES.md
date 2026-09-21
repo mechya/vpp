@@ -30,7 +30,7 @@ VPP's Rust crates are fetched by Cargo at build time and are not modified. Each 
 | ureq | HTTP client for updates | MIT or Apache-2.0 | https://github.com/algesten/ureq |
 | winit | the desktop window, input, and the event loop | Apache-2.0 | https://github.com/rust-windowing/winit |
 
-The C++ implementation removed after commit `1d1cd11` used SDL3, stb_truetype, lexbor, quickjs-ng, and orlp's ed25519; the notices for them are in that commit.
+The C++ implementation removed after commit `7cf865e` used SDL3, stb_truetype, lexbor, quickjs-ng, and orlp's ed25519; the notices for them are in that commit.
 
 `rustls-platform-verifier` also brings in `webpki-root-certs`, Mozilla's root certificate list, under the Community Data License Agreement – Permissive 2.0 (https://cdla.dev/permissive-2-0/).
 

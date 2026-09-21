@@ -1,7 +1,7 @@
 # `.vpp` page package and `.vppm` manifest
 
 **Current version:** 3
-**Implementation:** `crates/vpp-format/src/package.rs`. The frozen fixtures in `tests/fixtures/v3/` pin these bytes: `crates/vpp-format/tests/fixtures_v3.rs` fails if the layout changes. The format came from the C++ implementation removed after commit `1d1cd11` (`git show 1d1cd11:runtime/src/package.cpp`).
+**Implementation:** `crates/vpp-format/src/package.rs`. The frozen fixtures in `tests/fixtures/v3/` pin these bytes: `crates/vpp-format/tests/fixtures_v3.rs` fails if the layout changes. The format came from the C++ implementation removed after commit `7cf865e` (`git show 7cf865e:runtime/src/package.cpp`).
 
 A `.vpp` file is one page: its manifest, the table of its resources, the publisher's key and signature, and the resources themselves. A `.vppm` file is the same file cut off before the resource data, so the updater can check for changes with a few hundred bytes.
 

@@ -12,7 +12,7 @@ Parses stylesheets (tokenising with `cssparser`), encodes them as `style.bin`, m
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, steps 3 and 5a). It replaces the C++ `runtime/src/css.cpp`, `style.cpp`, and the `style.bin` half of `binary.cpp` (`git show 1d1cd11:<path>`).
+Implemented (`docs/rust-port.md` §8, steps 3 and 5a). It replaces the C++ `runtime/src/css.cpp`, `style.cpp`, and the `style.bin` half of `binary.cpp` (`git show 7cf865e:<path>`).
 
 | File | Holds |
 |---|---|

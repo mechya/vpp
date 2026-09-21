@@ -57,4 +57,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Ver
 
 ### Removed
 
-- The C++ implementation (viewer, runtime, compiler, packager, updater), `CMakeLists.txt`, and `build.cmd`. It remains in git history at commit `1d1cd11`. The tools come back from the Rust crates as the port proceeds.
+- The C++ implementation (viewer, runtime, compiler, packager, updater), `CMakeLists.txt`, and `build.cmd`. It remains in git history at commit `7cf865e`. The tools come back from the Rust crates as the port proceeds.

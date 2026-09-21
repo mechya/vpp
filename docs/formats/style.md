@@ -1,7 +1,7 @@
 # `style.bin`: one parsed stylesheet
 
 **Current version:** 1
-**Implementation:** `crates/vpp-style/src/binary.rs`. The layout came from the C++ implementation removed after commit `1d1cd11` (`git show 1d1cd11:runtime/src/binary.cpp`), and the Rust compiler reproduces its output byte for byte.
+**Implementation:** `crates/vpp-style/src/binary.rs`. The layout came from the C++ implementation removed after commit `7cf865e` (`git show 7cf865e:runtime/src/binary.cpp`), and the Rust compiler reproduces its output byte for byte.
 
 The compiler writes one `style/NN-<name>.bin` per stylesheet a page uses, in load order. The viewer loads them without a CSS parser; selector matching still happens at run time, because scripts can change the DOM. Primitives and decoder limits are the same as in [package.md](package.md).
 

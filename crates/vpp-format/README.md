@@ -12,7 +12,7 @@ Reads and writes the VPP containers: the `.vpp` page package, the `.vppm` update
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, step 2). It replaces the C++ `runtime/src/package.cpp`, `crypto.cpp`, `sha256.cpp`, and `runtime/include/vpp/bytes.h` (`git show 1d1cd11:<path>`).
+Implemented (`docs/rust-port.md` §8, step 2). It replaces the C++ `runtime/src/package.cpp`, `crypto.cpp`, `sha256.cpp`, and `runtime/include/vpp/bytes.h` (`git show 7cf865e:<path>`).
 
 | File | Holds |
 |---|---|

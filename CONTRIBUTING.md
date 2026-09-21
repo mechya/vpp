@@ -29,14 +29,14 @@ CI runs `fmt`, `clippy`, and `test` on Windows (the current focus; macOS and Lin
 
 **Screenshot tests** in `crates/vpp-paint/tests/screenshots.rs` render every example page and compare it with the images in `crates/vpp-paint/tests/screenshots/`. After an intended rendering change, run `VPP_UPDATE_SCREENSHOTS=1 cargo test -p vpp-paint --test screenshots`, look at every changed image, and commit them with the change. A failing run saves the new rendering in `target/screenshots/`.
 
-**During the port**, the specification is written down: byte layouts in `docs/formats/`, and how each tool behaved in `docs/reference/`. The C++ implementation they came from was removed after commit `1d1cd11`; read any file of it with `git show 1d1cd11:<path>`, for example `git show 1d1cd11:runtime/src/layout.cpp`.
+**During the port**, the specification is written down: byte layouts in `docs/formats/`, and how each tool behaved in `docs/reference/`. The C++ implementation they came from was removed after commit `7cf865e`; read any file of it with `git show 7cf865e:<path>`, for example `git show 7cf865e:runtime/src/layout.cpp`.
 
 ## 3. Where to start
 
 * Read [ARCHITECTURE.md](ARCHITECTURE.md): the pipeline, the crates, and the invariants that must never break.
 * Using an AI tool? Read section 10 first.
 * Issues labelled **`good first issue`** are small and self-contained.
-* **The port itself is the easiest way in.** The tracking issue has one checkbox per row of the C++ → Rust file map in `docs/rust-port.md` §5.3. Pick an unclaimed row, comment to claim it, and port it with the C++ file (`git show 1d1cd11:<path>`) beside you.
+* **The port itself is the easiest way in.** The tracking issue has one checkbox per row of the C++ → Rust file map in `docs/rust-port.md` §5.3. Pick an unclaimed row, comment to claim it, and port it with the C++ file (`git show 7cf865e:<path>`) beside you.
 * To show a bug, add a page to `examples/` that reproduces it. CI compiles and packages every example.
 
 Labels: `good first issue`, `help wanted`, `area/<crate>`, `needs-design`, `format-change`.

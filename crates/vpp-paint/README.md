@@ -12,7 +12,7 @@ Builds a display list from laid-out boxes and rasterises it into a pixel buffer 
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, steps 5b and 5c). It replaces the C++ `runtime/src/paint.cpp`, `font.cpp`, `svg.cpp`, and `canvas.cpp` (`git show 1d1cd11:<path>`).
+Implemented (`docs/rust-port.md` §8, steps 5b and 5c). It replaces the C++ `runtime/src/paint.cpp`, `font.cpp`, `svg.cpp`, and `canvas.cpp` (`git show 7cf865e:<path>`).
 
 | File | Holds |
 |---|---|

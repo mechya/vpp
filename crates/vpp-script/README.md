@@ -12,7 +12,7 @@ Checks and runs a page's JavaScript with QuickJS, through `rquickjs`, and expose
 
 ## Status
 
-Implemented. Start with the `ScriptEngine` trait (`src/engine.rs`) and its QuickJS backend (`src/quickjs.rs`). The page's API is written in JavaScript in `src/prelude.js`, on the checked natives in `src/bindings.rs`. `src/syntax.rs` is the syntax check `vppc` uses, with the crate's only `unsafe` code, a compile-only call into QuickJS. Each page gets its own runtime with a memory limit (`MEMORY_LIMIT`) and a time limit per script run and per event (`TIME_LIMIT`). Scripts never act on the window directly: they queue `HostRequest`s for the viewer. The C++ reference is `runtime/src/script.cpp` (`git show 1d1cd11:<path>`).
+Implemented. Start with the `ScriptEngine` trait (`src/engine.rs`) and its QuickJS backend (`src/quickjs.rs`). The page's API is written in JavaScript in `src/prelude.js`, on the checked natives in `src/bindings.rs`. `src/syntax.rs` is the syntax check `vppc` uses, with the crate's only `unsafe` code, a compile-only call into QuickJS. Each page gets its own runtime with a memory limit (`MEMORY_LIMIT`) and a time limit per script run and per event (`TIME_LIMIT`). Scripts never act on the window directly: they queue `HostRequest`s for the viewer. The C++ reference is `runtime/src/script.cpp` (`git show 7cf865e:<path>`).
 
 ## Test it on its own
 

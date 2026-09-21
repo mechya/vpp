@@ -12,7 +12,7 @@ Expands layouts, includes, slots, and components (`docs/template-syntax.md`) int
 
 ## Status
 
-Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/template.cpp` (`git show 1d1cd11:<path>`), and fixes three of its bugs, listed in `src/lib.rs`. The rules are in `docs/reference/compiler.md`, "Templates".
+Implemented (`docs/rust-port.md` §8, step 3). It replaces the C++ `runtime/src/template.cpp` (`git show 7cf865e:<path>`), and fixes three of its bugs, listed in `src/lib.rs`. The rules are in `docs/reference/compiler.md`, "Templates".
 
 | File | Holds |
 |---|---|

@@ -1,6 +1,6 @@
 # VPP Updater — Viewer Package Platform
 
-> **Reference specification.** This page describes how the C++ updater behaved before it was removed (last present in commit `1d1cd11`; read its source with `git show 1d1cd11:updater/src/updater.cpp`). The Rust port in `crates/vpp-updater` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
+> **Reference specification.** This page describes how the C++ updater behaved before it was removed (last present in commit `7cf865e`; read its source with `git show 7cf865e:updater/src/updater.cpp`). The Rust port in `crates/vpp-updater` reproduces this behaviour unless `docs/rust-port.md` says otherwise. Commands use the tool names the Rust port keeps (`vppc`, `vpppack`, `vpp-viewer`); they work once that crate is ported.
 
 **VPP Updater** is the installation and update system of **VPP — Viewer Package Platform**.
 
